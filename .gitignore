@@ -1,0 +1,13 @@
+# 서명 키·비밀값은 절대 올리지 않음
+*.jks
+*.keystore
+*.p12
+signing.env
+local.properties
+.gradle/
+android/.gradle/
+android/build/
+android/app/build/
+*.apk
+*.aab
+.idea/

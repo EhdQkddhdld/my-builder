@@ -1,0 +1,57 @@
+plugins { id "com.android.application" }
+
+// 서명: 환경변수(또는 -P 속성)로만 받음. 키스토어 파일은 저장소에 절대 넣지 않음.
+def prop = { String k -> System.getenv(k) ?: (project.hasProperty(k) ? project.property(k) : null) }
+def ksPath = prop("RD_KEYSTORE")
+def hasSigning = ksPath != null && new File(ksPath.toString()).exists()
+
+android {
+    namespace "app.mybuilder"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "app.mybuilder"
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+        // 앱이 여는 주소 (GitHub Pages). HTML만 이 주소에 올리면 앱 재설치 없이 반영됨.
+        buildConfigField "String", "APP_URL", '"https://ehdqkddhdld.github.io/my-builder/"'
+    }
+
+    signingConfigs {
+        if (hasSigning) {
+            release {
+                storeFile file(ksPath.toString())
+                storePassword prop("RD_KEYSTORE_PASSWORD")
+                keyAlias prop("RD_KEY_ALIAS")
+                keyPassword prop("RD_KEY_PASSWORD")
+                enableV1Signing true
+                enableV2Signing true
+                enableV3Signing true
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            manifestPlaceholders = [cleartext: "false"]
+            if (hasSigning) signingConfig signingConfigs.release
+        }
+        // 개발 확인용(에뮬레이터 → PC의 로컬 서버). 폰에는 release만 설치.
+        debug {
+            applicationIdSuffix ".dev"
+            manifestPlaceholders = [cleartext: "true"]
+            buildConfigField "String", "APP_URL", '"http://10.0.2.2:8765/my-builder/"'
+        }
+    }
+
+    buildFeatures { buildConfig true }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    lint { abortOnError false; checkReleaseBuilds false }
+}

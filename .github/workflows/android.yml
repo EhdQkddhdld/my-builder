@@ -1,0 +1,56 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    paths: ["android/**", ".github/workflows/android.yml"]
+    tags: ["apk-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Secret scan
+        run: python3 tools/scan_secrets.py
+      - name: Restore release keystore (repo secrets, optional)
+        env:
+          KS_B64: ${{ secrets.RD_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "RD_KEYSTORE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "SIGNED=1" >> "$GITHUB_ENV"
+          else
+            echo "::warning::RD_KEYSTORE_B64 secret 없음 → 서명 안 된 APK(빌드 확인용)만 만듦. 설치용 APK는 같은 키로 서명해야 함."
+          fi
+      - name: Build
+        working-directory: android
+        env:
+          RD_KEYSTORE_PASSWORD: ${{ secrets.RD_KEYSTORE_PASSWORD }}
+          RD_KEY_ALIAS: ${{ secrets.RD_KEY_ALIAS }}
+          RD_KEY_PASSWORD: ${{ secrets.RD_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease
+      - name: Rename
+        run: |
+          V=$(grep -m1 versionName android/app/build.gradle | sed -E 's/.*"(.*)".*/\1/')
+          F=android/app/build/outputs/apk/release
+          if [ "$SIGNED" = "1" ]; then cp $F/app-release.apk "my-builder-$V.apk"; else cp $F/app-release-unsigned.apk "my-builder-$V-unsigned.apk"; fi
+          ls -la *.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: "*.apk"
+      - name: Attach to release (tag apk-v*, signed only)
+        if: startsWith(github.ref, 'refs/tags/apk-v') && env.SIGNED == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" *.apk --title "${GITHUB_REF_NAME}" --notes "My Builder APK" || gh release upload "${GITHUB_REF_NAME}" *.apk --clobber
