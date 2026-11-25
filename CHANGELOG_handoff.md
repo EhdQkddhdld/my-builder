@@ -56,7 +56,7 @@ v2.4 빌드에서 CSS 레이어는 죽은 규칙 제거와 공백 압축을 거�
 | 키 | 종류 | 비고 |
 |---|---|---|
 | `nai_art_styles_v2`(+v1), `nai_custom_art_v1`, `nai_v366_styles_seeded` | LS | 그림체 |
-| `nai_artist_vault_v1`, `nai_v367_artist_pool_seeded` | LS | 작가 저장소 |
+| `nai_artist_vault_v1`, `nai_v29_arca_artists_seeded` (v2.9~; 예전 `nai_v367_artist_pool_seeded`는 무시) | LS | 작가 저장소 |
 | `nai_char_custom_v1` | LS | 커스텀 캐릭터 |
 | `nai_favorites_v1` `{chars:[],poses:[]}` | LS | v2.4: **chars는 더 이상 읽지 않지만 지우지도 않음**. 백업에 그대로 포함, 예전 백업 복구 가능 |
 | `nai_v5_gem_presets_v310`(+`_preset_v31`) | LS | 장면 슬롯 |
@@ -228,6 +228,18 @@ v2.4 파일은 그대로 두고 `src_v24.html` + 새 레이어(`v25.css`, `nai_v
   - 단계(1~3) 및 보관함 그리드 스크롤 위치 탭별 기억(`positions` Map, 저장/백업에 포함되지 않음).
 - **정리**: 중복 `<meta name="theme-color">` 1개로 통합, HTML 저장 전 드래그/종료/다이얼로그 임시 상태 정리(`rdV28CancelDialog`, `rdV28BeforeSave`). `innerHTML` 증가 없음(17곳 유지). 공유 기능 UI 없음(안드로이드 앱 수정 없음).
 
+### v2.9 — 화풍 정리(블루아카만) · 아카라이브 작가 242명 · 가챠 폐기 (`mixer_redesign_v2.9.html` = 저장소 `docs/index.html`, 빌드 `python3 patch_v29.py`)
+- **화풍 정리**: 기본 그림체는 `ba` 하나만 남김 → 이름 `블루아카 (아카라이브 믹스)`, 부팅·전체 초기화 시 기본 선택. 삭제: `zzz`·`hsr_official`·`endfield_official`·`dot`·`semi`·`pastel`·`gloss`·`rella`·`akakura`(=`REMOVED_STYLE_IDS`). `✨ 공식 화풍 갱신`(`art-sync-official`, `syncOfficialArtStyles`, `addOfficialStyle`, `OFFICIAL_STYLE_IDS`, 시트 대리 버튼, `+ HSR/엔드필드` 추가 칩)도 삭제. 도트풍 토글(`#dot-toggle`)과 사용자 커스텀 그림체는 유지. 블루아카 프롬프트 출력은 v2.8과 바이트 동일.
+- **마이그레이션**: `migrateArtStylesV29()`가 매 부팅 `nai_art_styles_v2`에서 삭제 id를 빼고 `ba`를 맨 앞으로(이름 `블루아카`면 새 이름으로). 예전 기록·프리셋·컷의 `artId`/`style`이 삭제 id면 `applyState`에서 `ba`로 대체. v1 그림체·v3.45 백업 경로도 삭제 id → `ba`. `seedV366BuiltinStylesOnce`는 더 이상 렐라·아카쿠라를 넣지 않음.
+- **작가 저장소 = 아카라이브 242명** (`ARCA_ARTISTS_V29 = [[번호, 이름, 반실사?1:0], …]`): 카테고리 `일반`(233) / `반실사`(9: bm94199, kazuho iwamoto, nixeu, solipsist, kimidake, kidmo, sangsoo jeong, wlop, fugtrup). 빨강·초록 표시는 태그 없이 일반으로. 태그는 `artist:이름`(`normArtistKey`), 단 `… style`로 끝나는 4개(oshi no ko style 등)는 접두어 없이.
+  - ★ 즐겨찾기 = 기존 `pinned` 필드 재사용. 기본 18명(3,6,31,33,35,38,50,56,60,130,135,180,181,188,189,208,225,232). 이름 탭으로 켜고 끔, 목록은 ★ → 내가 추가한 작가 → 번호순.
+  - 필터 `전체 / ★ 즐겨찾기(__fav) / 일반 / 반실사 / 내 작가(__mine)`, 검색은 이름 또는 번호.
+  - 썸네일: `docs/artists/NNN.webp`(160px, q60, 242장 1.59MB, `loading=lazy`) · 크게 보기 `docs/artists/l/NNN.webp`(360px, q55, 4.90MB). 카드 썸네일 탭 → 작가 시트에 큰 샘플 + 슬롯 담기/즐겨찾기/삭제.
+  - `migrateArtistVaultV29()`(플래그 `nai_v29_arca_artists_seeded`, 1회): v2.8 이하 기본 작가 120명(`LEGACY_BUILTIN_ARTIST_KEYS_V29`)만 걷어내고 242명으로 교체. 직접 추가한 작가·핀 찍은 예전 기본 작가·메모는 유지. 예전 형식 백업 불러오기도 같은 병합(`mergeArcaArtists`). `nai_v367_artist_pool_seeded`/`ARTIST_POOL_V367`/`seedV367ArtistPoolOnce` 제거.
+- **가챠 폐기**: `#gacha-*` UI, `GACHA_BASES`, `rollArtistGacha`, `paintGachaCard`, `saveGachaStyle`, `gachaStyle` 상태 전부 삭제. 예전 기록의 `gachaStyle` 값은 검사·적용 없이 무시(키는 허용 목록에 남겨 오래된 상태도 오류 없이 열림). `⚖️ 가중치 안정화`는 가챠와 무관해 유지.
+- **작가 믹스기(4슬롯)**: 슬롯마다 썸네일, 옵션은 ★ 먼저, 레시피를 `★ 즐겨찾기에서 / ★ 즐겨찾기 + 반실사 / 반실사 2 + 일반 2 / 전체에서 무작위`로 교체. (사용자 요청 믹스기 강화 5종은 다음 버전)
+- 버전 표기 `2.9`(title, `rd-version`, 메뉴), 앱 내 패치 노트에 v2.9 항목 추가.
+
 ## 6. 디자인 토큰
 
 - 글자: 본문 16 / 보조 15·14 / 최소 13px. 섹션 제목 20, 행 제목 17(왼쪽 4px 보라 막대), 카테고리 15, 시트 제목 17. 탭 라벨 13 (요청은 12였으나 가독성 때문에 13 유지).
@@ -278,6 +290,10 @@ functest2 프롬프트 체크포인트 원본과 전부 동일(커버/메인/데
 ### v2.8
 - functest2: 프롬프트·슬롯·블록·클립보드·히스토리 체크포인트 원본과 전부 동일(커버/메인/데스크톱). 남은 DIFF 3개는 `xx_used_sheet` 경로 플래그뿐.
 - naitest 174/174 · galtest 76/76 · uxtest 102/102 · previewtest 42/42 · apptest 70/70 · dltest2 2세대 중복 0 (`navOK: true`) · v2features 오류 0 · v28_audit 48/48 (기본 `alert`/`confirm`/`prompt` 0건, 실시간 스와이프 `--rd-v28-dx` 및 예외, 스낵바 `실행 취소`·만료, 401/429 복구 액션, 탭별 스크롤 기억, `prefers-reduced-motion` 규칙, 폴드8 폰트 `>=13px`·터치 `>=44px`·가로 넘침 없음).
+
+### v2.9
+- functest2(v2.8 ↔ v2.9, 블루아카 선택 후 같은 조작): 프롬프트·블록·슬롯·클립보드·히스토리 체크포인트 동일. 남은 DIFF 4종(×3 뷰포트)은 의도된 변경뿐: 초기·전체 초기화(블루아카 기본 선택), 카오스(그림체 후보 수), 저장소(작가 242명·`gachaStyle` 키 제거).
+- naitest 174/174 · galtest 76/76 · uxtest 102/102 · previewtest 42/42 · apptest 70/70 · dltest2 2세대 오류 0 (`navOK: true`) · v2features 오류 0 · v29_audit 48/48 · v29features 47/47 (화풍·242명·즐겨찾기·반실사·썸네일·가챠 제거·마이그레이션·백업 병합·폴드8 폰트 `>=13px`·터치 `>=44px`·가로 넘침 없음).
 
 ## 9. 알려진 문제와 TODO
 
