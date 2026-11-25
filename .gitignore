@@ -11,3 +11,7 @@ android/app/build/
 *.apk
 *.aab
 .idea/
+
+# Python
+__pycache__/
+*.pyc
