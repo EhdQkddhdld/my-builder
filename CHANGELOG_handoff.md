@@ -215,6 +215,19 @@ v2.4 파일은 그대로 두고 `src_v24.html` + 새 레이어(`v25.css`, `nai_v
   - `.m3-ripple-host`가 `position:relative`를 덮어써 뷰어 화살표(`.rd-gv-nav`) 위치가 밀리던 문제를 `.m3-ripple-rel` 분리로 해결.
   - `galOpen()` 시작 시 열린 스튜디오 모달을 닫아(`closeModal()`) `#rd-gal`이 가려지지 않게 수정.
 
+### v2.8 — 모션 · M3 확인창 · 스낵바 실행 취소 · 스크롤 기억 (`mixer_redesign_v2.8.html` = 저장소 `docs/index.html`)
+- **M3 대화상자 (`#rd-v28-dialog`, `rdConfirm` / `rdAlert`)**: 남아 있던 브라우저 기본 `alert`/`confirm`/`prompt` 21곳을 모두 M3 모달 다이얼로그로 교체(배경 `inert`, 포커스 트랩, `Escape`/백드롭/뒤로가기 닫기, `rdHandleBack` 최우선 순위).
+- **모션 및 스와이프 (`#rd-v28-css`, `#rd-v28-js`)**:
+  - `transform`/`opacity`만 쓰는 단계 전환 애니메이션(좌/우/상승, `cubic-bezier(.05,.7,.1,1)`·`cubic-bezier(.22,1.12,.36,1)`).
+  - 손가락을 따라가는 실시간 스와이프(`--rd-v28-dx`, 가장자리 저항, 놓으면 탄성 복귀 또는 단계 전환; `input`/슬라이더/칩/가로 스크롤 영역 제외).
+  - 모바일 PIP ↔ 확대 카드 전환(`rdV28PipMotion`), 보관함 진입/닫기 전환(`rdV28GalleryMotion`), 칩 눌림 마이크로 인터랙션, 이미지/생성 중 콤포지트 쉬머 스켈레톤(`.rd-v28-skeleton`, `.rd-v28-generating`), 생성 완료 펄스(`.rd-v28-pulse`).
+  - `@media(prefers-reduced-motion: reduce)` CSS/JS 대응.
+- **스낵바 실행 취소(`rdV28OfferUndo`) · 복구 액션 · 스크롤 기억**:
+  - 카오스·전체 초기화·섹션 초기화·프리셋 불러오기 시 스낵바 `실행 취소` 버튼 제공(새 편집 스냅샷 발생 시 자동 비활성).
+  - API 키 미설정/401 시 `키 설정` 바로가기, 429 시 `제한 안내` M3 안내창(자동 재시도 없음). 보관함 빈 화면 행동 유도 버튼 추가.
+  - 단계(1~3) 및 보관함 그리드 스크롤 위치 탭별 기억(`positions` Map, 저장/백업에 포함되지 않음).
+- **정리**: 중복 `<meta name="theme-color">` 1개로 통합, HTML 저장 전 드래그/종료/다이얼로그 임시 상태 정리(`rdV28CancelDialog`, `rdV28BeforeSave`). `innerHTML` 증가 없음(17곳 유지). 공유 기능 UI 없음(안드로이드 앱 수정 없음).
+
 ## 6. 디자인 토큰
 
 - 글자: 본문 16 / 보조 15·14 / 최소 13px. 섹션 제목 20, 행 제목 17(왼쪽 4px 보라 막대), 카테고리 15, 시트 제목 17. 탭 라벨 13 (요청은 12였으나 가독성 때문에 13 유지).
@@ -261,6 +274,10 @@ functest2 프롬프트 체크포인트 원본과 전부 동일(커버/메인/데
 ### v2.7
 - functest2: 프롬프트·슬롯·블록·클립보드·히스토리 체크포인트 원본과 전부 동일(커버/메인/데스크톱). 남은 DIFF 3개는 `xx_used_sheet` 경로 플래그뿐.
 - naitest 174/174 · galtest 74/74 · uxtest 100/100 · previewtest 42/42 · apptest 70/70 · dltest2 2세대 중복 0 (`navOK: true`) · v2features 오류 0 · v27_audit 50/50 (스펙 1~10, 스와이프 예외, 429 무재시도, 폴드8 레이아웃·터치 44px·폰트 13px·가로 넘침 없음).
+
+### v2.8
+- functest2: 프롬프트·슬롯·블록·클립보드·히스토리 체크포인트 원본과 전부 동일(커버/메인/데스크톱). 남은 DIFF 3개는 `xx_used_sheet` 경로 플래그뿐.
+- naitest 174/174 · galtest 76/76 · uxtest 102/102 · previewtest 42/42 · apptest 70/70 · dltest2 2세대 중복 0 (`navOK: true`) · v2features 오류 0 · v28_audit 48/48 (기본 `alert`/`confirm`/`prompt` 0건, 실시간 스와이프 `--rd-v28-dx` 및 예외, 스낵바 `실행 취소`·만료, 401/429 복구 액션, 탭별 스크롤 기억, `prefers-reduced-motion` 규칙, 폴드8 폰트 `>=13px`·터치 `>=44px`·가로 넘침 없음).
 
 ## 9. 알려진 문제와 TODO
 
