@@ -63,6 +63,8 @@ public class MainActivity extends Activity {
     private WebView web;
     private ValueCallback<Uri[]> fileCb;
     private File offlineHtml;
+    private long lastHapticAt;
+    private String lastHapticKind = "";
 
     @Override
     protected void onCreate(Bundle state) {
@@ -329,9 +331,40 @@ public class MainActivity extends Activity {
             });
         }
 
+        // Legacy bridge entry point remains available to saved/older HTML.
         @JavascriptInterface
         public void haptic() {
-            runOnUiThread(() -> web.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS));
+            hapticKind("tap", "normal");
+        }
+
+        @JavascriptInterface
+        public void hapticKind(String kind, String strength) {
+            if (kind == null) return;
+            final int effect;
+            switch (kind) {
+                case "tap":
+                    effect = "weak".equals(strength) ? HapticFeedbackConstants.CLOCK_TICK
+                            : "strong".equals(strength) ? HapticFeedbackConstants.CONTEXT_CLICK
+                            : HapticFeedbackConstants.KEYBOARD_TAP;
+                    break;
+                case "step": effect = HapticFeedbackConstants.CLOCK_TICK; break;
+                case "heavy": effect = HapticFeedbackConstants.LONG_PRESS; break;
+                case "copy": effect = HapticFeedbackConstants.CONTEXT_CLICK; break;
+                case "success": effect = Build.VERSION.SDK_INT >= 30
+                        ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.CONTEXT_CLICK; break;
+                case "warn": effect = Build.VERSION.SDK_INT >= 30
+                        ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS; break;
+                default: return;
+            }
+            runOnUiThread(() -> {
+                if (web == null || isFinishing() || isDestroyed() || !web.isShown() || !hasWindowFocus()) return;
+                long now = android.os.SystemClock.elapsedRealtime();
+                if (kind.equals(lastHapticKind) && now - lastHapticAt < 80L) return;
+                lastHapticKind = kind;
+                lastHapticAt = now;
+                // No IGNORE_* flags: respect system and view haptic settings.
+                web.performHapticFeedback(effect);
+            });
         }
 
         @JavascriptInterface
