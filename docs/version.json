@@ -1,9 +1,9 @@
 {
-  "web": "2.9",
+  "web": "3.0.1",
   "web_file": "docs/index.html",
-  "web_updated": "2026-11-25",
-  "apk": "1.0",
-  "apk_version_code": 1,
+  "web_updated": "2026-11-26",
+  "apk": "1.1",
+  "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "웹(HTML)만 바꾸면 apk는 그대로. 앱을 완전히 닫았다 다시 열면 최신 HTML이 뜸."
+  "note": "웹은 앱 재실행 시 갱신. APK 1.1은 동일 서명으로 빌드 후 덮어 설치."
 }
