@@ -742,6 +742,25 @@ body.rd-v30 #rd-v30-detail #group-light .chip[data-val="fluorescent lamp"]{--r25
 body.rd-v30 #rd-v30-detail #group-light .chip[data-val="candlelight"]{--r25-diagram:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2054%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22l%22%20cx%3D%220.156%22%20cy%3D%220.648%22%20r%3D%22.9%22%3E%3Cstop%20stop-color%3D%22%23ffd091%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%232d252e%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2254%22%20fill%3D%22url%28%23l%29%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2224%22%20r%3D%229%22%20fill%3D%22%2372545b%22%20stroke%3D%22%23ffd091%22%20stroke-width%3D%221.2%22%2F%3E%3Cpath%20d%3D%22M14%2054V48Q14%2036%2032%2036T50%2048V54%22%20fill%3D%22%2372545b%22%20stroke%3D%22%23ffd091%22%20stroke-width%3D%221.2%22%2F%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2235%22%20r%3D%224%22%20fill%3D%22%23ffd091%22%20opacity%3D%22.9%22%2F%3E%3C%2Fsvg%3E")}
 body.rd-v30 #rd-v30-detail #group-light .chip[data-val="neon lights"]{--r25-diagram:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2054%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22l%22%20cx%3D%220.797%22%20cy%3D%220.278%22%20r%3D%22.9%22%3E%3Cstop%20stop-color%3D%22%23e6a0e6%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2325233c%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2254%22%20fill%3D%22url%28%23l%29%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2224%22%20r%3D%229%22%20fill%3D%22%2361548d%22%20stroke%3D%22%23e6a0e6%22%20stroke-width%3D%221.2%22%2F%3E%3Cpath%20d%3D%22M14%2054V48Q14%2036%2032%2036T50%2048V54%22%20fill%3D%22%2361548d%22%20stroke%3D%22%23e6a0e6%22%20stroke-width%3D%221.2%22%2F%3E%3Ccircle%20cx%3D%2251%22%20cy%3D%2215%22%20r%3D%224%22%20fill%3D%22%23e6a0e6%22%20opacity%3D%22.9%22%2F%3E%3C%2Fsvg%3E")}
 </style>
+<style id="rd304-checkpoint-css">
+/* CP-01: explicit grid areas in wide result-only view. Not a verified HF-012 root-cause fix. */
+@media(min-width:840px){
+ body.rd-v30[data-rd-workspace=studio][data-studio-tab=result] .rd-st-body{grid-template-areas:"view";grid-template-columns:minmax(0,1fr)}
+}
+/* CP-02: view-only footer; lives inside the ephemeral detail host and scroll flow. */
+body.rd302 #rd-v30-detail .rd304-detail-footer{position:sticky;bottom:0;z-index:5;display:flex;justify-content:flex-end;align-items:center;min-width:0;box-sizing:border-box;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--outline);gap:8px}
+body.rd302 #rd-v30-detail .rd304-done{min-width:88px;min-height:44px;border:1px solid #C4BAFF;border-radius:12px;background:#C4BAFF;color:#171126;font:inherit;font-weight:700;padding:8px 18px;cursor:pointer}
+body.rd302 #rd-v30-detail:has(:is(input,textarea,[contenteditable=true]):focus) .rd304-detail-footer{position:static}
+body.rd302 #rd-v30-detail :is(input,textarea,[contenteditable=true]){scroll-margin-bottom:76px}
+body.rd302 .rd302-index-card .rd302-arrow{display:block;width:24px;height:24px;flex:0 0 24px;align-self:center;pointer-events:none}
+body.rd-v30 .chip:not(:is([data-art-id],[data-char-id],[data-who],.rd-plus,.rd-char-add,[data-add],.chip-hard)):not(:has(.rd-shot-ico,.rd-pose-th,img)):not(:is(#group-place *,#group-light *,#group-tough *)){align-items:center;justify-content:center;text-align:center}
+body.rd-v30 .chip:not(:is([data-art-id],[data-char-id],[data-who],.chip-hard)):not(:has(.rd-shot-ico,.rd-pose-th,img)):not(:is(#group-place *,#group-light *,#group-tough *)) :is(.ko,.en){text-align:center}
+body.rd-v30.rd-v27 .chip.active:not(.is-fav) .ko::before{content:none;display:none}
+body.rd-v30.rd-v27 .chip.active.is-fav .ko::before{content:"★ ";display:inline;margin-inline-end:0}
+body.rd-v30.rd-v27 .chip.active:not(.locked):not(.dimmed):not(:has(.ko)):not([data-who]):not(:is([data-art-id],[data-char-id],#group-place *,#group-light *))::before{content:none;display:none}
+body.rd-v30.rd-v27 .chip.active:not(:has(.ko)):not([data-who]):not(:is([data-art-id],[data-char-id],#group-place *,#group-light *)){gap:2px}
+body.rd-v30.rd302 .rd302-stage.active{animation:none}
+</style>
 </head>
 <body>
 <script id="rd-v28-js">
@@ -11908,7 +11927,7 @@ function updateStepCompletion() {
 function injectNextStepGuides() {
   const flow = [
     { id: 'step-1', next: 'step-2', label: '2. 체위·접촉 설정으로 이동' },
-    { id: 'step-2', next: 'step-3', label: '3. 수위·환경 설정으로 이동' },
+    { id: 'step-2', next: 'step-3', label: '3. 환경 설정으로 이동' },
     { id: 'step-3', next: 'step-4', label: '4. 완성 프롬프트 확인으로 이동' },
   ];
 
@@ -15820,12 +15839,12 @@ function openDetail(key,focus=true){
  const {def,ns}=detailMap.get(key);const step='step-'+def[1];if(B.dataset.rdStep!==step)window.jumpToStep(step);
  const main=$('rd-main'),trigger=document.activeElement,top=main.scrollTop;
  const host=ep(node('div','rd-v30-detail','rd302-detail'));const bar=ep(node('div','rd302-detail-bar','rd302-detail-bar'));
- const backBtn=button('‹',()=>closeDetail(true));backBtn.setAttribute('aria-label','뒤로가기');const title=node('h2',null,null,def[2]);const done=button('완료',()=>closeDetail(true));bar.append(backBtn,title,done);
+ const backBtn=button('‹',()=>closeDetail(true));backBtn.setAttribute('aria-label','뒤로가기');const title=node('h2',null,null,def[2]);const done=button('완료',()=>closeDetail(true));done.className='rd304-done';const footer=ep(node('div',null,'rd304-detail-footer'));footer.append(done);bar.append(backBtn,title);
  const moved=ns.filter(n=>n?.isConnected).map(n=>({n,p:n.parentNode,next:n.nextSibling}));
- detail={key,top,trigger,host,bar,moved,step};
+ detail={key,top,trigger,host,bar,footer,moved,step};
  for(const a of moved)host.append(a.n);
  // The advanced controls are inside the intensity wrapper. Keep their own index visibility independent.
- main.append(host);B.append(bar);
+ host.append(footer);main.append(host);B.append(bar);
  if(key==="pose")detail.cleanup=buildSceneSearch(host);
  if(key==="style"||key==="char"){cardThumbs.paint(host).catch(e=>window.rdToast?.(e.message,"warn"));detail.cleanup=cardThumbs.release;}
  setDetailChrome(true);main.scrollTop=0;refreshIndex();animateIn(host,'x',28);animateIn(bar,'x',16);if(focus)backBtn.focus({preventScroll:true});return true;
@@ -15838,6 +15857,12 @@ function closeDetail(animate=false,restoreFocus=true){
  finish();return true;
 }
 window.rdV302DetailOpen=()=>!!detail;
+function rd304Chevron(){
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('class','rd302-arrow');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');
+ const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+ path.setAttribute('d','m9 5 7 7-7 7');path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','1.8');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');svg.append(path);return svg;
+}
 function makeIndex(){
  markSources();B.classList.add('rd302');
  for(const chip of $('group-count').querySelectorAll('.chip')){
@@ -15845,7 +15870,7 @@ function makeIndex(){
   if(count==='solo'||/^1:[1-5]$/.test(count))chip.dataset.people='●'+'○'.repeat(count==='solo'?0:Number(count.slice(2)));
  }
  for(let i=1;i<=3;i++){const step=$('step-'+i),index=ep(node('div',null,'rd302-index'));step.querySelector('.section-title').after(index);
-  for(const def of detailDefs.filter(d=>d[1]===i)){const b=button('',()=>openDetail(def[0]));b.className='rd302-index-card';b.dataset.detail=def[0];const texts=node('span',null,'rd302-index-text'),summary=node('small');texts.append(node('b',null,null,def[2]),summary);summaryNodes.set(def[0],summary);b.append(texts,node('span',null,'rd302-arrow','›'));index.append(b)}
+  for(const def of detailDefs.filter(d=>d[1]===i)){const b=button('',()=>openDetail(def[0]));b.className='rd302-index-card';b.dataset.detail=def[0];const texts=node('span',null,'rd302-index-text'),summary=node('small');texts.append(node('b',null,null,def[2]),summary);summaryNodes.set(def[0],summary);b.append(texts,rd304Chevron());index.append(b)}
  }
  const scope=$('closeup-scope-bar');if(scope){const label=ep(node('div',null,'rd302-scope-label','촬영 범위'));scope.prepend(label);const eff=ep(node('p','rd302-effective','rd302-effective'));$('group-shot').after(eff)}
  const fluid=$('group-fluids');if(fluid)fluid.before(ep(node('h3',null,'rd302-field-label','체액 종류 · 부위 (다중 선택)')));
