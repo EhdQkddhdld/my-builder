@@ -1,9 +1,9 @@
 {
-  "web": "3.0.2",
+  "web": "3.0.3",
   "web_file": "docs/index.html",
-  "web_updated": "2026-11-26",
+  "web_updated": "2026-11-27",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "웹 전용 상세 설정 및 화면 조작 개선. Android 1.1 유지."
+  "note": "Design 2.5 R2 통합 창작 환경 개편. Android 1.1 및 코어 3.67.0 유지."
 }
