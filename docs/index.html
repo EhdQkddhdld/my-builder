@@ -784,6 +784,22 @@ body.rd-v30 #rd-v30-detail .rd304-scene-cards button[aria-pressed=true]{border-c
 .rd304-cancel[hidden]{display:none!important}
 @media(min-width:840px){body.rd-v30 #rd-v30-detail .rd304-scene-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
+<style id="rd304-cover-css">
+body.rd-v30 #rd-v30-detail #group-char .rd304-char-card{display:grid;grid-template-rows:1fr auto;gap:5px;min-width:0;position:relative}
+body.rd-v30 #rd-v30-detail #group-char .rd304-char-card>.chip{height:100%;box-sizing:border-box;width:100%;min-width:0}
+body.rd-v30 #rd-v30-detail .rd304-cover-edit{min-height:44px;width:100%;min-width:0;border:1px solid #454550;border-radius:10px;background:#2b2b36;color:#c4baff;font:inherit;font-size:13px;padding:4px;overflow-wrap:anywhere}
+.rd304-cover-content{display:grid;gap:12px;min-width:0;padding:8px}
+.rd304-cover-preview{display:grid;place-items:center;min-height:140px;height:min(190px,30dvh);background:#111116;border:1px solid #454550;border-radius:14px;overflow:hidden;color:#9693a3}
+.rd304-cover-preview img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.rd304-cover-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rd304-cover-content button,.rd304-cover-save{min-height:44px;border:1px solid #454550;border-radius:10px;padding:8px;background:#2b2b36;color:#e0dfe8;font:inherit;font-size:13px}
+.rd304-cover-save:not(:disabled){background:#c4baff;color:#171126;border-color:#c4baff;font-weight:700}
+.rd304-cover-content button:disabled,.rd304-cover-save:disabled{opacity:.5}
+.rd304-cover-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rd304-cover-record{display:grid;gap:6px;min-width:0;text-align:left;overflow-wrap:anywhere}
+.rd304-cover-record img{width:100%;height:90px;object-fit:contain;background:#111116;border-radius:6px}
+.rd304-cover-status,.rd304-cover-record small{font-size:13px;color:#b5b2c3}
+</style>
 </head>
 <body>
 <script id="rd-v28-js">
@@ -7831,13 +7847,14 @@ const cardThumbs=(()=>{
    if(!ok)throw new Error("표지 크기가 너무 큽니다.");return {key:r.key,blob};
   }));
  }
- async function write(key,blob){
+ async function write(key,blob,guard=()=>true){
+  if(!guard())throw new Error("표지 편집 대상이 변경되었습니다.");
   if(rd210Importing)throw new Error("백업 복구가 진행 중입니다.");
   writes++;try{
   const small=blob?await rd210ResizePhoto(blob):null;
   if(small?.size>61440)throw new Error("표지 저장 크기를 초과했습니다.");
-  await transact("readwrite",store=>small?store.put({key,blob:small}):store.delete(key));
-  await paint();
+  await transact("readwrite",store=>{if(rd210Importing||!guard())throw new Error("표지 편집 대상이 변경되었습니다.");return small?store.put({key,blob:small}):store.delete(key)});
+  try{await paint()}catch(error){window.rdToast?.("표지 저장은 완료됐지만 화면 갱신에 실패했습니다. "+error.message,"warn")}
   }finally{writes--}
  }
  return {writing:()=>writes>0,list,replace,write,release,paint,backup,decode};
@@ -12140,7 +12157,7 @@ function restoreBackup(data){
 }
 
 window.importSettings=async function(input){
-  const file=input?.files?.[0];if(!file)return;if(rd210ThumbWriting||rd210Importing||cardThumbs.writing()){window.rdToast?.("사진 저장이 끝난 뒤 복구해 주세요.","warn");input.value="";return;}rd210Importing=true;
+  const file=input?.files?.[0];if(!file)return;if(rd210ThumbWriting||rd210Importing||cardThumbs.writing()){window.rdToast?.("사진 저장이 끝난 뒤 복구해 주세요.","warn");input.value="";return;}rd210Importing=true;window.rd304CloseCover?.();
   try{const data=JSON.parse(await file.text());let old=null;if(Object.hasOwn(data,"mixRecipes"))rd210ValidateRecipes(data.mixRecipes);if(Object.hasOwn(data,"artistThumbs")){const rows=await rd210DecodeThumbs(data.artistThumbs);await rd210LoadThumbs();old=await rd210ThumbTx("readonly",s=>s.getAll());await rd210ReplaceThumbs(rows);}let oldCovers=null;
     try{
       if(Object.hasOwn(data,"cardCovers")){const rows=await cardThumbs.decode(data.cardCovers);oldCovers=await cardThumbs.list();await cardThumbs.replace(rows);}
@@ -12478,6 +12495,7 @@ async function deleteCharEditor() {
   delete data.overrides[id];
   if (Object.hasOwn(CHARACTERS,id) && !data.deletedBuiltins.includes(id)) data.deletedBuiltins.push(id);
   if(!writeStorageWithUndo(CHAR_CUSTOM_KEY,data))return;
+  window.rd304CloseCoverFor?.(id);
   refreshCharacters("");
 }
 
@@ -15919,7 +15937,8 @@ function openDetail(key,focus=true){
  // The advanced controls are inside the intensity wrapper. Keep their own index visibility independent.
  host.append(footer);main.append(host);B.append(bar);
  if(key==="pose")detail.cleanup=buildSceneSearch(host);
- if(key==="style"||key==="char"){cardThumbs.paint(host).catch(e=>window.rdToast?.(e.message,"warn"));detail.cleanup=cardThumbs.release;}
+ if(key==="style"){cardThumbs.paint(host).catch(e=>window.rdToast?.(e.message,"warn"));detail.cleanup=cardThumbs.release;}
+ if(key==="char")detail.cleanup=rd304MountCharCovers(host);
  setDetailChrome(true);main.scrollTop=0;refreshIndex();animateIn(host,'x',28);animateIn(bar,'x',16);if(focus)backBtn.focus({preventScroll:true});return true;
 }
 function closeDetail(animate=false,restoreFocus=true){
@@ -15930,6 +15949,88 @@ function closeDetail(animate=false,restoreFocus=true){
  finish();return true;
 }
 window.rdV302DetailOpen=()=>!!detail;
+let rd304CoverEdit=null;
+window.rd304CloseCover=()=>{if(rd304CoverEdit)window.rdSheet?.close()};
+window.rd304CloseCoverFor=id=>{if(rd304CoverEdit?.id===id)window.rdSheet?.close()};
+function rd304MountCharCovers(host){
+ const root=$('group-char');let disposed=false,queued=false;
+ function sync(){
+  if(disposed)return;let added=false;
+  for(const chip of root.querySelectorAll('.chip[data-char-id]')){
+   if(chip.parentElement?.classList.contains('rd304-char-card')){
+    const b=chip.parentElement.querySelector('.rd304-cover-edit'),label=chip.querySelector('.r25-cover')?'이미지 변경':'이미지 추가';if(b&&b.textContent!==label)b.textContent=label;continue
+   }
+   const wrapper=node('div',null,'rd304-char-card'),b=ep(node('button',null,'rd304-cover-edit',chip.querySelector('.r25-cover')?'이미지 변경':'이미지 추가'));
+   b.type='button';b.setAttribute('aria-label',(getEffectiveCharacters()[chip.dataset.charId]?.name||'캐릭터')+' 이미지 관리');
+   b.addEventListener('click',e=>{e.stopPropagation();rd304OpenCover(host,chip.dataset.charId,b)});
+   chip.before(wrapper);wrapper.append(chip,b);added=true;
+  }
+  if(added)cardThumbs.paint(host).catch(e=>window.rdToast?.(e.message,'warn'));
+ }
+ const obs=new MutationObserver(()=>{if(!queued&&!disposed){queued=true;queueMicrotask(()=>{queued=false;sync()})}});
+ obs.observe(root,{subtree:true,childList:true});sync();
+ return ()=>{disposed=true;obs.disconnect();window.rd304CloseCover?.();cardThumbs.release();for(const wrapper of root.querySelectorAll('.rd304-char-card')){const chip=wrapper.querySelector('.chip[data-char-id]');if(chip)wrapper.before(chip);wrapper.remove()}};
+}
+async function rd304OpenCover(host,id,trigger){
+ if(rd210Importing||cardThumbs.writing()||batch()||!Object.hasOwn(getEffectiveCharacters(),id))return window.rdToast?.('현재 이미지 관리 작업을 시작할 수 없습니다.','warn');
+ window.rd304CloseCover?.();
+ const char=getEffectiveCharacters()[id],key='char/'+id,content=ep(node('section',null,'rd304-cover-content')),preview=node('div',null,'rd304-cover-preview'),status=node('p',null,'rd304-cover-status','표지를 불러오는 중…'),tools=node('div',null,'rd304-cover-options'),gallery=node('div',null,'rd304-cover-gallery');
+ const input=node('input');input.type='file';input.accept='image/*';input.hidden=true;
+ const save=button('저장',()=>commit(false)),remove=button('표지 해제',()=>commit(true)),close=button('취소',()=>window.rdSheet.close());
+ save.className='rd304-cover-save';save.disabled=true;remove.disabled=true;
+ const session={id,urls:new Set(),selected:null,previewUrl:null,hasExisting:false,pending:false,serial:0,closed:false};
+ rd304CoverEdit=session;
+ const alive=()=>rd304CoverEdit===session&&!session.closed&&!rd210Importing&&Object.hasOwn(getEffectiveCharacters(),id);
+ const makeUrl=blob=>{const url=URL.createObjectURL(blob);session.urls.add(url);return url};
+ function releaseUrl(url){if(url){URL.revokeObjectURL(url);session.urls.delete(url)}}
+ function showBlob(blob,text){releaseUrl(session.previewUrl);session.previewUrl=null;preview.replaceChildren();if(blob){const im=node('img');im.alt='표지 미리보기';session.previewUrl=makeUrl(blob);im.src=session.previewUrl;preview.append(im)}else preview.append(node('span',null,null,'표지 없음'));status.textContent=text}
+ function updateButtons(){save.disabled=!alive()||session.pending||!session.selected;remove.disabled=!alive()||session.pending||!session.hasExisting}
+ async function pick(blob){
+  if(!alive()||session.pending||!blob)return;
+  const serial=++session.serial;const old=session.selected;session.pending=true;updateButtons();
+  let url;try{
+   if(!String(blob.type).startsWith('image/')||blob.size>40*1024*1024)throw new Error('40MB 이하의 이미지 파일을 선택해 주세요.');
+   url=makeUrl(blob);const im=new Image();im.src=url;await im.decode();if(!im.naturalWidth||!im.naturalHeight)throw new Error('이미지를 읽을 수 없습니다.');
+   if(!alive()||serial!==session.serial)return;
+   session.selected=blob;showBlob(blob,'선택 예정 · 저장을 누르면 카드 표지로 적용됩니다.');
+  }catch(error){if(alive()&&serial===session.serial){session.selected=old;await rdAlert({title:'이미지 선택 오류',body:error.message})}}
+  finally{releaseUrl(url);if(serial===session.serial){session.pending=false;updateButtons()}}
+ }
+ async function commit(deleting){
+  if(!alive()||session.pending||(!deleting&&!session.selected))return;
+  session.pending=true;updateButtons();
+  try{
+   if(deleting&&!await rdConfirm({title:'표지 해제',body:'카드 표지만 삭제합니다. 원본 이미지는 유지됩니다.',confirmText:'해제',danger:true}))return;
+   if(!alive())return;
+   await cardThumbs.write(key,deleting?null:session.selected,alive);
+   window.rdToast?.(deleting?'표지를 해제했어요':'표지를 저장했어요','ok');
+   if(rd304CoverEdit===session)window.rdSheet.close();
+  }catch(error){if(alive())await rdAlert({title:'표지 저장 오류',body:error.message})}
+  finally{session.pending=false;updateButtons()}
+ }
+ let galleryRows=[],offset=0,loading=false;
+ const more=button('더 보기',()=>renderGallery());more.hidden=true;
+ function renderGallery(){
+  if(!alive())return;
+  for(const r of galleryRows.slice(offset,offset+24)){
+   const b=button('',async()=>{if(!alive()||session.pending)return;session.pending=true;updateButtons();let blob;try{blob=await window.rdNai.galFull(r.id)}catch(error){if(alive())window.rdToast?.(error.message,'warn')}finally{session.pending=false;updateButtons()}if(!alive())return;if(blob)await pick(blob);else window.rdToast?.('원본 이미지를 찾지 못했어요','warn')});
+   b.className='rd304-cover-record';if(r.thumb instanceof Blob){const im=node('img');im.alt='';im.loading='lazy';im.src=makeUrl(r.thumb);b.append(im)}
+   b.append(node('small',null,null,new Date(r.ts).toLocaleDateString('ko-KR')+' · '+(r.meta?.width||'?')+'×'+(r.meta?.height||'?')));gallery.append(b);
+  }
+  offset=Math.min(galleryRows.length,offset+24);more.hidden=offset>=galleryRows.length;
+ }
+ const device=button('기기 이미지 선택',()=>{if(alive()&&!session.pending)input.click()});
+ const fromGallery=button('갤러리에서 선택',async()=>{
+  if(!alive()||loading||session.pending)return;loading=true;
+  try{galleryRows=await window.rdNai.galList();if(!alive())return;for(const im of gallery.querySelectorAll('img'))releaseUrl(im.src);gallery.replaceChildren();offset=0;renderGallery();if(!galleryRows.length)gallery.append(node('p',null,null,'저장된 이미지가 없습니다.'))}
+  catch(error){if(alive())window.rdToast?.(error.message,'warn')}finally{loading=false}
+ });
+ input.addEventListener('change',()=>{const f=input.files?.[0];input.value='';if(f)pick(f)});
+ tools.append(device,fromGallery);content.append(preview,status,tools,input,gallery,more,remove);host.append(content);
+ window.rdSheet.open('이미지 관리 · '+char.name,{nodes:[content],acts:[close,save],onClose:()=>{session.closed=true;session.serial++;for(const url of session.urls)URL.revokeObjectURL(url);session.urls.clear();content.remove();if(rd304CoverEdit===session)rd304CoverEdit=null;if(trigger?.isConnected)trigger.focus({preventScroll:true})}});
+ try{const row=(await cardThumbs.list()).find(r=>r.key===key);if(!alive())return;session.hasExisting=!!row?.blob;if(!session.selected&&!session.pending)showBlob(row?.blob||null,row?.blob?'현재 저장된 표지':'아직 표지가 없어요.');updateButtons()}
+ catch(error){if(alive()){status.textContent='표지 저장소를 읽지 못했습니다.';window.rdToast?.(error.message,'warn')}}
+}
 function rd304Chevron(){
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
  svg.setAttribute('class','rd302-arrow');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');
