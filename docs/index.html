@@ -14580,10 +14580,11 @@ bootSequence();
       const t=await new Promise(r=>c.toBlob(r,"image/webp",.82));return t||blob;}catch(e){return blob;}
   }
   let idSeq=0;const HIST_CAP=200;
-  async function galAdd(blob,meta){
+  async function galAdd(blob,meta,beforeCommit=null){
     const id=Date.now()*100+(idSeq++%100);const thumb=await makeThumb(blob);
     const rec={id,ts:Date.now(),thumb,bytes:blob.size+thumb.size,meta,pinned:false};
     const d=await gdb();
+    beforeCommit?.();
     if(!d){rec.temporary=true;memMeta.push(rec);memFull.set(id,blob);if((await evictHistory()).includes(id))throw new Error("보관된 핀 때문에 세션 기록이 가득 찼습니다.");return rec;}
     const t=d.transaction(["meta","full"],"readwrite");t.objectStore("meta").put(rec);t.objectStore("full").put({id,blob});
     if(!(await txp(t)))throw new Error("기록에 저장하지 못했어요 (저장 공간 부족일 수 있어요).");
@@ -14767,7 +14768,7 @@ bootSequence();
     b.title="NAI 생성 창 열기 (그림은 창 안에서 생성)";b.innerHTML='<span class="rd-nai-ico" aria-hidden="true">🎨</span><span class="rd-nai-lbl">생성 창</span>';
     host.append(b);
   }
-  let curUrl=null,cur=null,curBlob=null,busy=false,curAC=null,cancelled=false;
+  let curUrl=null,cur=null,curBlob=null,busy=false,curAC=null,cancelled=false,rd304ResultCommitting=false;
   function openModal(){buildModal();const wasHidden=$("rd-nai-modal").hidden;if(window.rdV30Route)window.rdV30Route("studio");else{$("rd-nai-modal").hidden=false;document.body.classList.add("rd-nai-open");}buildSourceSwitch();paintHist();syncPinBtn();
     if(!getKey()){const d=$("rd-nai-settings");if(d)d.open=true;}
     if(!cur&&!busy&&$("rd-nai-stage").innerHTML==="")showState("idle",'<div class="rd-nai-ph" aria-hidden="true"></div><p>설정을 고르고 <b>🎨 생성</b>을 누르세요</p>');}
@@ -14804,7 +14805,7 @@ bootSequence();
   function setBusy(on){
     busy=on;const gb=$("rd-nai-gen");if(gb){gb.disabled=on;gb.classList.toggle("busy",on);}
     const go=$("rd-nai-go");if(go){go.disabled=on;go.textContent=on?"생성 중…":"🎨 생성";}
-    const c=$("rd-nai-cancel");if(c)c.hidden=!on;const a=$("rd-nai-again");if(a)a.disabled=on;
+    const c=$("rd-nai-cancel");if(c){c.hidden=!on;c.disabled=false;}const a=$("rd-nai-again");if(a)a.disabled=on;
     const pb=$("rd-prev-btn");if(pb){if(on){pb.disabled=true;pb.classList.add("busy");pb.setAttribute("aria-disabled","true");}else{pb.classList.remove("busy");syncPrev();}}syncPreviewActions();
   }
   async function generate(){
@@ -14822,29 +14823,33 @@ bootSequence();
     saveOpts(o);
     const body=buildBody(p,o,seed);
     const frozen=structuredClone({body,builderState:captureState(),source:studioMode});
-    setBusy(true);cancelled=false;$("rd-nai-dl").disabled=true;$("rd-nai-togal").disabled=true;$("rd-nai-meta").textContent="";
+    setBusy(true);cancelled=false;rd304ResultCommitting=false;$("rd-nai-dl").disabled=true;$("rd-nai-togal").disabled=true;$("rd-nai-meta").textContent="";
     window.rdOpenDesignTab?.("result");
     showState("load",'<div class="rd-nai-spin" aria-hidden="true"></div><p>생성 중… 보통 5–20초</p><div class="rd-nai-bar"><i></i></div>');
     const ac=new AbortController();curAC=ac;const to=setTimeout(()=>ac.abort(),120000);
+    const assertCurrent=()=>{if(curAC!==ac||cancelled)throw new Error("__cancel");if(ac.signal.aborted&&!rd304ResultCommitting)throw new Error("응답이 너무 늦어요 (120초 초과).")};
+    const beginCommit=()=>{assertCurrent();rd304ResultCommitting=true;const cancel=$("rd-nai-cancel");if(cancel)cancel.disabled=true;};
     try{
       let res;
       try{res=await fetch(ENDPOINT,{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify(body),signal:ac.signal,credentials:"omit",referrerPolicy:"no-referrer"});}
       catch(e){if(cancelled)throw new Error("__cancel");throw new Error(e&&e.name==="AbortError"?"응답이 너무 늦어요 (120초 초과). 잠시 뒤 다시 시도해 주세요.":"네트워크/CORS 오류: NovelAI 서버에 연결하지 못했어요. 인터넷 연결, 광고 차단·보안 확장 프로그램, 회사/학교 방화벽을 확인해 주세요.");}
-      if(!res.ok){let t="";try{t=await res.text();}catch(e){}throw new Error(errMsg(res.status,t));}
+      assertCurrent();
+      if(!res.ok){let t="";try{t=await res.text();}catch(e){}assertCurrent();throw new Error(errMsg(res.status,t));}
       const buf=await res.arrayBuffer();
-      if(cancelled)throw new Error("__cancel");
-      const img=await unzipFirstImage(buf);
+      assertCurrent();
+      const img=await unzipFirstImage(buf);assertCurrent();clearTimeout(to);
       const blob=new Blob([img.data],{type:mimeOf(img.name)});
       const meta={...frozen,...sentPromptMeta(frozen.body),model:o.model,width:body.parameters.width,height:body.parameters.height,steps:o.steps,scale:o.scale,sampler:o.sampler,noise:o.noise,rescale:o.rescale,seed};
-      let rec;try{rec=await galAdd(blob,meta);rec.saved=true;}catch(e){rec={id:Date.now(),ts:Date.now(),meta,saved:false};toast(e.message,"warn");}
-      showRec(rec,blob);galRefreshCount();syncPinBtn();window.rdV28Complete?.("studio");
+      let rec;try{rec=await galAdd(blob,meta,beginCommit);rec.saved=true;}catch(e){assertCurrent();rec={id:Date.now(),ts:Date.now(),meta,saved:false};toast(e.message,"warn");}
+      assertCurrent();showRec(rec,blob);galRefreshCount();syncPinBtn();window.rdV28Complete?.("studio");
       if(window.rdV30Current?.()==="studio")window.rdOpenDesignTab?.("result");
       toast(rec.temporary?"생성 완료 · 이번 세션에만 보관":rec.saved?"생성 완료 · 기록에 저장":"생성 완료 · 기록 저장 실패",rec.saved&&!rec.temporary?"ok":"warn");
     }catch(e){
-      if(e&&e.message==="__cancel")showState("idle",'<p>생성을 취소했어요.</p>');
+      if(curAC!==ac)return;
+      if(cancelled||(e&&e.message==="__cancel"))showState("idle",'<p>생성을 취소했어요.</p>');
       else {showState("err",'<div class="rd-nai-erricon" aria-hidden="true">!</div><p id="rd-nai-err" role="alert">'+esc(e.message||String(e))+"</p>");window.rdV28GenerationError?.(e.message||String(e),"studio");}
-    }finally{clearTimeout(to);curAC=null;setBusy(false);
-      if(cur){$("rd-nai-dl").disabled=false;$("rd-nai-togal").disabled=!cur.saved;syncPinBtn();}
+    }finally{clearTimeout(to);if(curAC===ac){curAC=null;rd304ResultCommitting=false;setBusy(false);
+      if(cur){$("rd-nai-dl").disabled=false;$("rd-nai-togal").disabled=!cur.saved;syncPinBtn();}}
     }
   }
 
@@ -14857,7 +14862,7 @@ bootSequence();
     if(t.closest("#rd-prev-close")){hidePrevCard();return;}
     if(t.closest("#rd-nai-go")){generate();return;}
     if(t.closest("#rd-nai-open")){document.body.classList.remove("rd-menu-open");openModal();return;}
-    if(t.closest("#rd-nai-cancel")){if(curAC){cancelled=true;curAC.abort();}else if(compareOwned)rd210Compare.controller?.abort();return;}
+    if(t.closest("#rd-nai-cancel")){if(curAC){if(!rd304ResultCommitting){cancelled=true;curAC.abort();}}else if(compareOwned)rd210Compare.controller?.abort();return;}
     if(t.closest("[data-nai-close]")){closeModal();return;}
     if(t.closest("#rd-nai-dl")){download();return;}
     if(t.closest("#rd-nai-again")){generate();return;}
