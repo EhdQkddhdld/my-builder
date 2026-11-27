@@ -22,7 +22,7 @@ jobs:
       - name: Exact candidate and generic application regressions
         run: |
           python - <<'PY'
-          import hashlib, json, shutil, threading, tempfile
+          import hashlib, json, shutil, threading, tempfile, traceback, subprocess
           from pathlib import Path
           from functools import partial
           from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
@@ -33,6 +33,13 @@ jobs:
           assert hashlib.sha256(html.read_bytes()).hexdigest()=='ff72dc7cb1bf9fa55f5b206ff490e56bcab90d277c6844714c32a5c6277da76b'
           assert hashlib.sha256(Path('docs/version.json').read_bytes()).hexdigest()=='46bea6645a530ea8ab33437d334b0c598a1d93e217f7c44dc666cf4364751e7a'
           results=[]
+          fingerprints={}
+          for file,expected_blob in [('docs/index.html','12233467a182a9354529b3571c2bb6ea9ab12fd8'),('docs/version.json','3cc74b2226730009d09703c6de9c7830ac6da30f')]:
+            blob=subprocess.check_output(['git','hash-object',file],text=True).strip()
+            assert blob==expected_blob, (file,blob)
+            fingerprints[file]={'blob':blob,'sha256':hashlib.sha256(Path(file).read_bytes()).hexdigest()}
+          (evidence/'fingerprints.json').write_text(json.dumps(fingerprints,indent=2))
+          print(json.dumps(fingerprints),flush=True)
           with tempfile.TemporaryDirectory() as td:
             root=Path(td)
             shutil.copyfile(html,root/'index.html')
@@ -43,30 +50,48 @@ jobs:
               with sync_playwright() as w:
                 browser=w.chromium.launch()
                 for width,height in [(476,660),(839,660),(840,660),(933,612)]:
-                  c=browser.new_context(viewport={'width':width,'height':height},reduced_motion='reduce',accept_downloads=True,service_workers='block')
-                  c.route('**/*',lambda r:r.continue_() if r.request.url.startswith(origin+'/') and r.request.method in ('GET','HEAD') else r.abort())
-                  p=c.new_page()
-                  p.set_default_timeout(12000)
-                  errors=[]
-                  p.on('pageerror',lambda e:errors.append(type(e).__name__))
-                  def boot(path='index.html'):
+                  p=None
+                  phase='context setup'
+                  def boot(path='index.html',normalize=True):
+                    global phase
+                    phase=f'boot {path}: goto'
                     p.goto(origin+'/'+path,wait_until='load')
+                    phase=f'boot {path}: route readiness'
                     p.wait_for_function("typeof window.rdV30Route==='function'")
+                    phase=f'boot {path}: builder route'
                     p.evaluate("rdV30Route('builder')")
+                    if normalize:
+                      phase=f'boot {path}: step-1'
+                      p.evaluate("jumpToStep('step-1')")
+                    phase=f'boot {path}: count card visibility'
                     p.locator('[data-detail=count]').wait_for(state='visible')
                   def state():return p.evaluate('JSON.stringify(captureState())')
                   def undo():return p.evaluate('undoStack.length')
                   def run(name,fn):
+                    global p,phase
+                    phase='context setup'
+                    c=browser.new_context(viewport={'width':width,'height':height},reduced_motion='reduce',accept_downloads=True,service_workers='block')
+                    errors=[]
                     try:
+                      c.route('**/*',lambda r:r.continue_() if r.request.url.startswith(origin+'/') and r.request.method in ('GET','HEAD') else r.abort())
+                      p=c.new_page()
+                      p.set_default_timeout(12000)
+                      p.on('pageerror',lambda e:errors.append(str(e)))
                       fn()
                       row={'viewport':[width,height],'test':name,'status':'PASS'}
                     except Exception as e:
-                      row={'viewport':[width,height],'test':name,'status':'FAIL','error_type':type(e).__name__}
+                      row={'viewport':[width,height],'test':name,'status':'FAIL','phase':phase,'error_type':type(e).__name__,'error_message':str(e),'traceback':traceback.format_exc()}
+                    finally:
+                      c.close()
+                    row['page_errors']=errors
+                    if errors:row['status']='FAIL'
                     results.append(row)
                     print(json.dumps(row),flush=True)
                     (evidence/'results.json').write_text(json.dumps(results,indent=2))
                   def navigation():
+                    global phase
                     boot()
+                    phase='navigation state and undo'
                     initial=state()
                     u=undo()
                     p.locator('[data-detail=count]').click()
@@ -84,19 +109,24 @@ jobs:
                     p.evaluate('undoLast()')
                     assert state()==initial and undo()==u
                   def storage():
+                    global phase
                     boot()
+                    phase='backup restore and IndexedDB reads'
                     p.evaluate("""async()=>{
                       await rd210LoadThumbs();
                       await cardThumbs.list();
                       const data={presets:[{name:'QA neutral',state:captureState()}]};
                       restoreBackup(data);
                     }""")
+                    phase='backup reload and persistence'
                     before=p.evaluate('JSON.stringify(readPresets())')
                     p.reload(wait_until='load')
                     p.wait_for_function("typeof window.rdV30Route==='function'")
                     assert p.evaluate('JSON.stringify(readPresets())')==before
+                    phase='backup export download'
                     with p.expect_download(timeout=20000) as di:
                       p.evaluate('()=>{void exportSettings()}')
+                    phase='backup exported JSON assertions'
                     path=Path(td)/f'backup-{width}.json'
                     di.value.save_as(path)
                     data=json.loads(path.read_text())
@@ -105,27 +135,44 @@ jobs:
                     assert data['presets'][0]['state']['schemaVersion']==2
                     path.unlink()
                   def resave():
+                    global phase
                     boot()
                     for i in (1,2):
+                      phase=f'HTML generation {i}: download'
                       with p.expect_download(timeout=20000) as di:
                         p.evaluate('()=>{downloadSelfHTML()}')
                       filename=f'roundtrip-{width}-{i}.html'
                       di.value.save_as(root/filename)
+                      phase=f'HTML generation {i}: file size'
                       assert (root/filename).stat().st_size>200000
                       boot(filename)
+                      phase=f'HTML generation {i}: reopened DOM assertions'
                       assert p.locator('#group-count').count()==1
                       assert p.evaluate("typeof window.downloadSelfHTML==='function'")
                       (root/filename).unlink()
-                  run('generic navigation, count state and undo',navigation)
+                  def reproduce():
+                    global phase
+                    navigation()
+                    diagnostic={'viewport':[width,height],'prior_run':46038439375,'before_reload':p.locator('[data-detail=count]').is_visible()}
+                    try:
+                      boot(normalize=False)
+                      diagnostic['outcome']='NOT_REPRODUCED'
+                    except Exception as e:
+                      diagnostic.update(outcome='REPRODUCED' if type(e).__name__=='TimeoutError' and phase.endswith('count card visibility') else 'OTHER_ERROR',phase=phase,error_type=type(e).__name__,error_message=str(e),traceback=traceback.format_exc())
+                    diagnostic['after_legacy_boot_count_visible']=p.locator('[data-detail=count]').is_visible()
+                    print(json.dumps(diagnostic),flush=True)
+                    (evidence/'legacy-boot-reproduction.json').write_text(json.dumps(diagnostic,indent=2))
+                    phase='reproduction recovery: explicit step-1'
+                    p.evaluate("jumpToStep('step-1')")
+                    p.locator('[data-detail=count]').wait_for(state='visible')
+                  if width==476:run('legacy boot diagnostic and recovery',reproduce)
                   run('native app backup read, preset restore and reload',storage)
                   if width in (476,933):run('two generation HTML save and reopen',resave)
-                  row={'viewport':[width,height],'test':'uncaught errors','status':'PASS' if not errors else 'FAIL','count':len(errors)}
-                  results.append(row);print(json.dumps(row),flush=True)
-                  c.close()
                 browser.close()
             finally:
               server.shutdown()
           (evidence/'results.json').write_text(json.dumps(results,indent=2))
+          assert len(results)==7, results
           assert all(r['status']=='PASS' for r in results), 'Regression failed: see results'
           PY
       - uses: actions/upload-artifact@v4
