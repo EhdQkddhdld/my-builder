@@ -761,6 +761,29 @@ body.rd-v30.rd-v27 .chip.active:not(.locked):not(.dimmed):not(:has(.ko)):not([da
 body.rd-v30.rd-v27 .chip.active:not(:has(.ko)):not([data-who]):not(:is([data-art-id],[data-char-id],#group-place *,#group-light *)){gap:2px}
 body.rd-v30.rd302 .rd302-stage.active{animation:none}
 </style>
+<style id="rd304-scene-css">
+body.rd-v30 #rd-v30-detail .rd304-shelved{display:none!important}
+body.rd-v30 #rd-v30-detail .rd304-scene{margin:12px 0;min-width:0;gap:12px}
+.rd304-mode-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:4px;background:#17171f;border-radius:12px}
+.rd304-mode-tabs button,.rd304-facets button{min-height:44px;min-width:44px;font:inherit;font-size:13px}
+.rd304-mode-tabs button[aria-pressed=true],.rd304-facets button[aria-pressed=true]{background:#c4baff;color:#171126;border-color:#c4baff;font-weight:650}
+.rd304-facets{display:flex;flex-wrap:wrap;gap:6px}
+.rd304-facets button{border-radius:999px}
+.rd304-prerequisites,.rd304-scene-summary{color:#e0dfe8;background:#191923;padding:10px;border-radius:10px;overflow-wrap:anywhere}
+.rd304-empty{color:#b5b2c3;padding:16px;text-align:center}
+body.rd-v30 #rd-v30-detail .rd304-scene-cards{max-height:none;overflow:visible;grid-template-columns:repeat(2,minmax(0,1fr))}
+body.rd-v30 #rd-v30-detail .rd304-scene-cards button{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:5px;border:2px solid #454550;min-height:130px}
+body.rd-v30 #rd-v30-detail .rd304-scene-cards button[aria-pressed=true]{border-color:#c4baff;background:#353048}
+.rd304-scene-cards b,.rd304-scene-cards small{font-size:13px;line-height:1.4}
+.rd304-scene-cards small{color:#b5b2c3}
+.rd304-scene-visual{display:grid;place-items:center;height:70px;border-radius:8px;background:#181820;color:#a89bff;overflow:hidden}
+.rd304-scene-visual svg,.rd304-scene-visual img{display:block;width:100%;height:100%;object-fit:contain}
+.rd304-pair-status{color:#c4baff;font-size:13px;min-height:18px}
+.rd304-applied{outline:1px solid #a89bff;outline-offset:-4px}
+.rd304-cancel{min-height:44px;padding:8px 16px;background:#2b2b36;border:1px solid #454550;border-radius:12px;color:#e0dfe8;font:inherit}
+.rd304-cancel[hidden]{display:none!important}
+@media(min-width:840px){body.rd-v30 #rd-v30-detail .rd304-scene-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
 </head>
 <body>
 <script id="rd-v28-js">
@@ -5668,6 +5691,7 @@ window.clearSectionChips = function(containerId){
   pushUndo();
   const container=document.getElementById(containerId);
   if(!container)return;
+  window.rd304DiscardSceneDraft?.();
   container.querySelectorAll(".chip.active").forEach(function(c){
     c.classList.remove("active");
     c.removeAttribute("data-who");
@@ -10446,6 +10470,7 @@ window.loadNamed=function(i){
 };
 
 function loadStandaloneState(state){
+  window.rd304DiscardSceneDraft?.();
   deactivateSequenceForLoad();
   applyState(state);
   paintSequenceUI();
@@ -11697,6 +11722,7 @@ window.applyChaos=function(){
     paintChaosNotice("잠긴 조건(인원·체위·장소)을 동시에 만족하는 조합이 없어 카오스를 실행할 수 없습니다.");
     return;
   }
+  window.rd304DiscardSceneDraft?.();
   pushUndo();
   closeupScope="tight";insertState="inserted";
   paintChaosNotice();
@@ -11839,6 +11865,7 @@ window.applyChaos=function(){
 };
 
 window.resetAllSelections=function(){
+  window.rd304DiscardSceneDraft?.();
   pushUndo();
 
   closeupScope="tight";insertState="inserted";
@@ -12718,6 +12745,7 @@ function setSequenceNotice(text,jump=""){
 function selectSequenceCut(nextIndex,force=false){
   if(!Number.isInteger(nextIndex)||nextIndex<0||nextIndex>=sequenceState.cuts.length)return;
   if(sequenceState.activeIndex===nextIndex&&!force)return;
+  window.rd304DiscardSceneDraft?.();
   syncActiveCutFromBuilder();
   sequenceState.activeIndex=nextIndex;
   sequenceJump="";
@@ -12800,6 +12828,7 @@ function deleteActiveSequenceCut(){
 }
 
 function resetSequenceState(){
+  window.rd304DiscardSceneDraft?.();
   sequenceState={activeIndex:-1,mode:"",notice:"",cuts:[]};
   sequenceJump="";
   persistSequenceState();
@@ -15747,19 +15776,34 @@ function setDetailChrome(on){
  B.classList.toggle('rd302-detail-open',on);hide($('rd-v27-appbar'),on);hide($('rd-v30-nav'),on||current==='home');hide($('step-nav'),on||current!=='builder');
  if(on){window.rdV27ClosePip?.();hide($('rd-v30-preview-handle'),true);hide($('rd-right'),true);hide($('rd-v27-copy'),true)}else syncPreviewPanel();
 }
+let rd304SceneDraft={mode:'pose',facet:'',pair:'',owner:''};
+let rd304SceneRefresh=null;
+function rd304SceneOwner(){
+ return JSON.stringify([activeSequenceCut()?.id||null,getActiveSingle('group-count'),getActiveSingle('group-scene-phase'),getActiveSingle('group-pose-preset'),getActiveSingle('group-shot')]);
+}
+window.rd304DiscardSceneDraft=()=>{rd304SceneDraft.pair='';rd304SceneDraft.owner='';rd304SceneRefresh?.()};
 function buildSceneSearch(host){
- const panel=node('section',null,'r25-panel'), heading=node('h3',null,null,'기본 샷으로 장면 찾기');
- const choicesView=node('details'),choiceCards=node('div',null,'r25-candidates');
- choicesView.open=true;
- choicesView.append(node('summary',null,null,'자세와 구도 카드로 보기'),choiceCards);
- const order=node('select'), filter=node('select'), pairs=node('select'), summary=node('p');
- const apply=button('장면 적용',commit), cancel=button('취소',()=>refresh());
- const option=(sel,value,text)=>{const item=node('option',null,null,text);item.value=value;sel.append(item)};
- const field=(name,input)=>{const label=node('label',null,'r25-field',name);label.append(input);return label};
- option(order,'pose','자세로 찾기');option(order,'shot','구도로 찾기');
- panel.append(heading,field('탐색 순서',order),field('분류',filter),field('호환 장면',pairs),choicesView,summary,apply,cancel);
- summary.setAttribute('aria-live','polite');host.prepend(panel);
- let choices=[],context='';
+ const legacy=$('group-pose-preset'),panel=ep(node('section',null,'r25-panel rd304-scene')),heading=node('h3',null,null,'장면 탐색');
+ const prerequisites=node('p',null,'rd304-prerequisites'),modes=node('div',null,'rd304-mode-tabs'),filters=node('div',null,'rd304-facets'),cards=node('div',null,'r25-candidates rd304-scene-cards'),summary=node('p',null,'rd304-scene-summary');
+ const empty=node('p',null,'rd304-empty'),more=button('기존 목록 및 썸네일 도구',toggleLegacy);
+ const footer=detail.footer,done=footer.querySelector('.rd304-done'),cancel=button('취소',()=>{rd304SceneDraft.pair='';describe();});
+ cancel.className='rd304-cancel';footer.prepend(cancel);
+ const legacyBar=$('rd-thumbs-make')?.parentElement;
+ const legacyState=[legacy,legacyBar].filter(Boolean).map(n=>({n,inert:n.inert,aria:n.getAttribute('aria-hidden'),shelved:n.classList.contains('rd304-shelved')}));
+ let legacyOpen=false,choices=[],context='',raf=0,disposed=false;
+ function setLegacy(open){
+  legacyOpen=open;
+  for(const {n,inert,aria,shelved} of legacyState){n.classList.toggle('rd304-shelved',open?shelved:true);n.inert=open?inert:true;if(open){if(aria===null)n.removeAttribute('aria-hidden');else n.setAttribute('aria-hidden',aria)}else n.setAttribute('aria-hidden','true')}
+  more.setAttribute('aria-expanded',String(open));more.textContent=open?'기존 목록 접기':'기존 목록 및 썸네일 도구';
+ }
+ function toggleLegacy(){if(!batch())setLegacy(!legacyOpen)}
+ more.setAttribute('aria-controls','group-pose-preset');
+ panel.append(heading,prerequisites,modes,filters,empty,cards,summary,more);legacy.before(panel);
+ summary.setAttribute('aria-live','polite');setLegacy(false);
+ if(rd304SceneDraft.owner!==rd304SceneOwner()){rd304SceneDraft.pair='';rd304SceneDraft.owner=rd304SceneOwner()}
+ for(const [mode,label] of [['pose','자세로 찾기'],['shot','구도로 찾기']]){
+  const b=button(label,()=>{rd304SceneDraft.mode=mode;rd304SceneDraft.facet='';render()});b.dataset.mode=mode;modes.append(b);
+ }
  function available(){
   const count=getActiveSingle('group-count'), phase=getActiveSingle('group-scene-phase');
   const rows=[];
@@ -15771,66 +15815,95 @@ function buildSceneSearch(host){
   return rows;
  }
  function key(row){return JSON.stringify([row.count,row.phase,row.pose.id,row.shot.shotId])}
+
  function facets(row){
-  if(order.value==='pose')return [row.pose.label];
-  const s=row.shot;
-  return [formatDistKo(s.distTag,s),formatAngleKo(s.angleTag,s.isLookback),...(/\bpov\b/i.test(s.angleTag)?['1인칭 POV']:[])];
- }
- function refresh(){
-  choices=available();context=choices.map(key).join('|');
-  filter.replaceChildren();option(filter,'','전체');
-  for(const label of new Set(choices.flatMap(facets)))option(filter,label,label);
-  refreshPairs();
- }
- function refreshPairs(){
-  pairs.replaceChildren();choiceCards.replaceChildren();option(pairs,'','장면 선택');
-  for(const row of choices.filter(row=>!filter.value||facets(row).includes(filter.value))){
-   const id=key(row),caption=row.pose.label.split(' (')[0]+' · '+row.shot.label;
-   option(pairs,id,caption);
-   const pick=button(caption,()=>{pairs.value=id;describe()});pick.dataset.pair=id;choiceCards.append(pick);
+  if(rd304SceneDraft.mode==='pose'){
+   const t=String(row.pose.type||'');return [{standing:'서기',sitting:'앉기',lying:'눕기'}[t]||t||'기타'];
   }
+  const s=row.shot;return [...new Set([formatDistKo(s.distTag,s),formatAngleKo(s.angleTag,s.isLookback),...(/\\bpov\\b/i.test(s.angleTag)?['1인칭 POV']:[])].filter(Boolean))];
+ }
+ function titleOf(row){return row.pose.label.split(' (')[0]}
+ function render(){
+  for(const b of modes.children)b.setAttribute('aria-pressed',String(b.dataset.mode===rd304SceneDraft.mode));
+  const values=[...new Set(choices.flatMap(facets))];
+  if(rd304SceneDraft.facet&&!values.includes(rd304SceneDraft.facet))rd304SceneDraft.facet='';
+  filters.replaceChildren();for(const value of ['',...values]){
+   const b=button(value||'전체',()=>{rd304SceneDraft.facet=value;render()});b.setAttribute('aria-pressed',String(rd304SceneDraft.facet===value));filters.append(b);
+  }
+  cards.replaceChildren();
+  const filtered=choices.filter(row=>!rd304SceneDraft.facet||facets(row).includes(rd304SceneDraft.facet));
+  const frag=document.createDocumentFragment();
+  for(const row of filtered){
+   const id=key(row),b=button('',()=>{rd304SceneDraft.owner=rd304SceneOwner();rd304SceneDraft.pair=id;describe()});b.dataset.pair=id;
+   const visual=node('span',null,'rd304-scene-visual'),thumb=chipByVal('#group-pose-preset .chip',row.pose.id)?.querySelector('img.rd-pose-th');
+   if(thumb?.src){const im=node('img');im.alt='';im.loading='lazy';im.src=thumb.src;visual.append(im)}
+   else {
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 120 64');svg.setAttribute('aria-hidden','true');
+    const p=document.createElementNS(svg.namespaceURI,'path');p.setAttribute('d','M10 20V9H24 M96 9H110V20 M110 44V55H96 M24 55H10V44 M60 24V40 M52 32H68');p.setAttribute('fill','none');p.setAttribute('stroke','currentColor');p.setAttribute('stroke-width','1.8');p.setAttribute('stroke-linecap','round');svg.append(p);
+    const r=document.createElementNS(svg.namespaceURI,'rect');const tight=!!row.shot.isCrop||/close|upper/i.test(row.shot.distTag||'');r.setAttribute('x',tight?'36':'45');r.setAttribute('y',tight?'15':'7');r.setAttribute('width',tight?'48':'30');r.setAttribute('height',tight?'34':'50');r.setAttribute('rx','3');r.setAttribute('fill','none');r.setAttribute('stroke','currentColor');r.setAttribute('stroke-dasharray','3 3');svg.append(r);visual.append(svg);
+   }
+   b.append(visual,node('b',null,null,rd304SceneDraft.mode==='pose'?titleOf(row):row.shot.label),node('small',null,null,rd304SceneDraft.mode==='pose'?row.shot.label:titleOf(row)),node('span',null,'rd304-pair-status'));frag.append(b);
+  }
+  cards.append(frag);empty.hidden=filtered.length>0;empty.textContent=!getActiveSingle('group-count')?'등장 인원부터 선택해 주세요.':!getActiveSingle('group-scene-phase')?'진행 시점을 선택해 주세요.':'현재 조건에서 표시할 수 있는 장면이 없어요. 검색 및 분류를 확인해 주세요.';
   describe();
  }
+ function refresh(){
+  if(disposed)return;
+  const owner=rd304SceneOwner();if(rd304SceneDraft.owner!==owner){rd304SceneDraft.owner=owner;rd304SceneDraft.pair=''}
+  choices=available();context=choices.map(key).join('|');
+  if(rd304SceneDraft.pair&&!choices.some(row=>key(row)===rd304SceneDraft.pair))rd304SceneDraft.pair='';
+  const count=chipKo('group-count'),phase=chipKo('group-scene-phase');prerequisites.textContent='인원 · '+(count||'미선택')+' / 진행 시점 · '+(phase||'미선택');
+  render();
+ }
  function describe(){
-  const cur=chipKo('group-pose-preset'),shot=chipKo('group-shot');
-  const selected=choices.find(row=>key(row)===pairs.value);
-  const same=selected&&selected.pose.id===getActiveSingle('group-pose-preset')&&selected.shot.shotId===getActiveSingle('group-shot');
-  for(const item of choiceCards.children)item.setAttribute('aria-pressed',String(item.dataset.pair===pairs.value));
-  apply.disabled=!selected||same||batch();
-  summary.textContent='현재 장면 · '+([cur,shot].filter(Boolean).join(' · ')||'미선택')+' / '+
-   (selected?'적용 예정 · '+selected.pose.label.split(' (')[0]+' · '+selected.shot.label:
-   choices.length?'호환 후보 '+(pairs.options.length-1)+'개':'등장 인원과 진행 시점을 선택해 주세요.');
+  const cur=chipKo('group-pose-preset'),shot=chipKo('group-shot'),p=getActiveSingle('group-pose-preset'),s=getActiveSingle('group-shot');
+  const selected=choices.find(row=>key(row)===rd304SceneDraft.pair),same=selected&&selected.pose.id===p&&selected.shot.shotId===s;
+  const appliedKey=key({count:getActiveSingle('group-count'),phase:getActiveSingle('group-scene-phase'),pose:{id:p},shot:{shotId:s}});
+  for(const item of cards.children){const picked=item.dataset.pair===rd304SceneDraft.pair,applied=item.dataset.pair===appliedKey;item.setAttribute('aria-pressed',String(picked));item.classList.toggle('rd304-applied',applied);item.querySelector('.rd304-pair-status').textContent=applied?'적용됨':picked?'선택 예정':''}
+  cancel.hidden=!selected||same;done.textContent=selected&&!same?'적용 및 완료':'완료';done.disabled=batch();
+  summary.textContent='현재 장면 · '+([cur,shot].filter(Boolean).join(' · ')||'미선택')+' / '+(selected?'적용 예정 · '+titleOf(selected)+' · '+selected.shot.label:'호환 후보 '+choices.length+'개');
  }
  function commit(){
-  const row=available().find(item=>key(item)===pairs.value);
-  if(!row||batch()){refresh();return}
-  if(row.pose.id===getActiveSingle('group-pose-preset')&&row.shot.shotId===getActiveSingle('group-shot'))return;
-  const snapshot=captureUndoSnapshot(), edits=exportManualEdits(), copied=exportCopiedKeys();
-  const previous=undoStack.at(-1), priorTray=collectActiveTrayItems(), storedSequence=localStorage.getItem(SEQUENCE_KEY);
+  const row=available().find(item=>key(item)===rd304SceneDraft.pair);
+  if(!row||batch()){refresh();return false}
+  if(row.pose.id===getActiveSingle('group-pose-preset')&&row.shot.shotId===getActiveSingle('group-shot'))return true;
+  const snapshot=captureUndoSnapshot();if(!snapshot)return false;
+  const edits=exportManualEdits(),copied=exportCopiedKeys(),priorUndo=undoStack.slice(),previous=undoStack.at(-1),priorTray=collectActiveTrayItems();
+  let storedSequence;try{storedSequence=localStorage.getItem(SEQUENCE_KEY)}catch(error){window.rdToast?.('현재 상태를 보호할 수 없어 적용하지 않았습니다.','warn');return false}
+  const prevKeep=copySlotKeep,prevIndex=copySlotIndex;
+  snapshot.manualEdits=edits;snapshot.copiedKeys=copied;
+  const beforeCut=snapshot.sequence?.cuts?.[snapshot.sequence.activeIndex];if(beforeCut){beforeCut.manualEdits=structuredClone(edits);beforeCut.copiedKeys=structuredClone(copied)}
   try{
-   for(const chip of $('group-pose-preset').querySelectorAll('.chip'))chip.classList.toggle('active',chip.dataset.val===row.pose.id);
-   renderShots(row.shot.shotId);syncFavButtons();updateAllDynamicFilters();
-   if(getActiveSingle('group-shot')!==row.shot.shotId)throw new Error('장면 조건이 바뀌었습니다.');
-   generate();
+   window.withUndoSuppressed(()=>{
+    for(const chip of $('group-pose-preset').querySelectorAll('.chip'))chip.classList.toggle('active',chip.dataset.val===row.pose.id);
+    renderShots(row.shot.shotId);syncFavButtons();updateAllDynamicFilters();
+    if(getActiveSingle('group-pose-preset')!==row.pose.id||getActiveSingle('group-shot')!==row.shot.shotId)throw new Error('장면 조건이 바뀌었습니다.');
+    generate();
+   });
   }catch(error){
-   sequenceState=cloneSequenceState(snapshot.sequence);
-   applyState(snapshot.state,{manualEdits:edits,copiedKeys:copied,fromSequenceSwitch:true});
-   if(localStorage.getItem(SEQUENCE_KEY)!==storedSequence){
-    if(storedSequence===null)safeRemoveStorage(SEQUENCE_KEY);else safeSetStorage(SEQUENCE_KEY,storedSequence);
-   }
-   paintSequenceUI();
-   window.rdToast?.('이전 장면으로 복원했습니다. '+error.message,'warn');refresh();return;
+   let restored=false;
+   try{
+    sequenceState=cloneSequenceState(snapshot.sequence);copySlotKeep=prevKeep;copySlotIndex=prevIndex;
+    applyState(snapshot.state,{manualEdits:edits,copiedKeys:copied,fromSequenceSwitch:true});
+    if(localStorage.getItem(SEQUENCE_KEY)!==storedSequence){const ok=storedSequence===null?safeRemoveStorage(SEQUENCE_KEY):safeSetStorage(SEQUENCE_KEY,storedSequence);if(!ok)throw new Error('시퀀스 저장 복구 실패')}
+    paintSequenceUI();restored=true;
+   }catch(rollback){window.rdToast?.('복구 실패: '+rollback.message,'warn')}
+   finally{undoStack.splice(0,undoStack.length,...priorUndo);paintUndoButton()}
+   window.rdToast?.((restored?'이전 장면으로 복원했습니다. ':'장면 적용 실패. ')+error.message,'warn');refresh();return false;
   }
-  snapshot.manualEdits=edits;snapshot.copiedKeys=copied;pushUndoSnapshot(snapshot);
+  pushUndoSnapshot(snapshot);
   const active=new Set(collectActiveTrayItems().map(item=>item.key));
   const dropped=priorTray.filter(item=>!active.has(item.key)&&!['체위','샷'].includes(item.category));
   window.rdV28OfferUndo('장면 적용'+(dropped.length?' · 해제 '+dropped.map(x=>x.label).join(', '):''),previous);
-  window.rdHaptic?.('tap');refresh();
+  window.rdHaptic?.('tap');rd304SceneDraft.pair='';refresh();return true;
  }
- order.addEventListener('change',refresh);filter.addEventListener('change',refreshPairs);pairs.addEventListener('change',describe);
- const obs=new MutationObserver(()=>{if(available().map(key).join('|')!==context)refresh();else describe()});
- obs.observe($('group-pose-preset'),{subtree:true,attributes:true,attributeFilter:['class'],childList:true});
- refresh();return ()=>obs.disconnect();
+ detail.finish=()=>{if(!rd304SceneDraft.pair||commit()){rd304SceneDraft.pair='';closeDetail(true)}};
+ function queued(){if(!raf&&!disposed)raf=requestAnimationFrame(()=>{raf=0;if(!disposed){const now=available().map(key).join('|');if(now!==context||rd304SceneDraft.owner!==rd304SceneOwner())refresh();else describe()}})}
+ const obs=new MutationObserver(queued);
+ for(const id of ['group-pose-preset','group-count','group-scene-phase','group-shot']){const n=$(id);if(n)obs.observe(n,{subtree:true,attributes:true,attributeFilter:['class'],childList:true})}
+ const thumbObs=new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes,...r.removedNodes].some(n=>n.nodeType===1&&n.matches?.('img.rd-pose-th'))))render()});thumbObs.observe(legacy,{subtree:true,childList:true});
+ rd304SceneRefresh=queued;refresh();
+ return ()=>{disposed=true;obs.disconnect();thumbObs.disconnect();if(raf)cancelAnimationFrame(raf);if(rd304SceneRefresh===queued)rd304SceneRefresh=null;for(const {n,inert,aria,shelved} of legacyState){n.classList.toggle('rd304-shelved',shelved);n.inert=inert;if(aria===null)n.removeAttribute('aria-hidden');else n.setAttribute('aria-hidden',aria)}};
 }
 
 function openDetail(key,focus=true){
@@ -15839,7 +15912,7 @@ function openDetail(key,focus=true){
  const {def,ns}=detailMap.get(key);const step='step-'+def[1];if(B.dataset.rdStep!==step)window.jumpToStep(step);
  const main=$('rd-main'),trigger=document.activeElement,top=main.scrollTop;
  const host=ep(node('div','rd-v30-detail','rd302-detail'));const bar=ep(node('div','rd302-detail-bar','rd302-detail-bar'));
- const backBtn=button('‹',()=>closeDetail(true));backBtn.setAttribute('aria-label','뒤로가기');const title=node('h2',null,null,def[2]);const done=button('완료',()=>closeDetail(true));done.className='rd304-done';const footer=ep(node('div',null,'rd304-detail-footer'));footer.append(done);bar.append(backBtn,title);
+ const backBtn=button('‹',()=>closeDetail(true));backBtn.setAttribute('aria-label','뒤로가기');const title=node('h2',null,null,def[2]);const done=button('완료',()=>{if(detail?.finish)detail.finish();else closeDetail(true)});done.className='rd304-done';const footer=ep(node('div',null,'rd304-detail-footer'));footer.append(done);bar.append(backBtn,title);
  const moved=ns.filter(n=>n?.isConnected).map(n=>({n,p:n.parentNode,next:n.nextSibling}));
  detail={key,top,trigger,host,bar,footer,moved,step};
  for(const a of moved)host.append(a.n);
