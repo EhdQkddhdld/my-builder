@@ -1,0 +1,136 @@
+name: My Builder QA - storage and navigation regression
+on:
+  push:
+    branches: ['qa/v3.2.1-r2']
+    paths: ['.github/workflows/qa-storage-regression.yml','docs/**']
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Exact candidate and generic application regressions
+        run: |
+          python - <<'PY'
+          import hashlib, json, shutil, threading, tempfile
+          from pathlib import Path
+          from functools import partial
+          from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+          from playwright.sync_api import sync_playwright
+          evidence=Path('qa-regression-evidence')
+          evidence.mkdir(exist_ok=True)
+          html=Path('docs/index.html')
+          assert hashlib.sha256(html.read_bytes()).hexdigest()=='ff72dc7cb1bf9fa55f5b206ff490e56bcab90d277c6844714c32a5c6277da76b'
+          assert hashlib.sha256(Path('docs/version.json').read_bytes()).hexdigest()=='46bea6645a530ea8ab33437d334b0c598a1d93e217f7c44dc666cf4364751e7a'
+          results=[]
+          with tempfile.TemporaryDirectory() as td:
+            root=Path(td)
+            shutil.copyfile(html,root/'index.html')
+            server=ThreadingHTTPServer(('127.0.0.1',0),partial(SimpleHTTPRequestHandler,directory=td))
+            threading.Thread(target=server.serve_forever,daemon=True).start()
+            origin=f'http://127.0.0.1:{server.server_port}'
+            try:
+              with sync_playwright() as w:
+                browser=w.chromium.launch()
+                for width,height in [(476,660),(839,660),(840,660),(933,612)]:
+                  c=browser.new_context(viewport={'width':width,'height':height},reduced_motion='reduce',accept_downloads=True,service_workers='block')
+                  c.route('**/*',lambda r:r.continue_() if r.request.url.startswith(origin+'/') and r.request.method in ('GET','HEAD') else r.abort())
+                  p=c.new_page()
+                  p.set_default_timeout(12000)
+                  errors=[]
+                  p.on('pageerror',lambda e:errors.append(type(e).__name__))
+                  def boot(path='index.html'):
+                    p.goto(origin+'/'+path,wait_until='load')
+                    p.wait_for_function("typeof window.rdV30Route==='function'")
+                    p.evaluate("rdV30Route('builder')")
+                    p.locator('[data-detail=count]').wait_for(state='visible')
+                  def state():return p.evaluate('JSON.stringify(captureState())')
+                  def undo():return p.evaluate('undoStack.length')
+                  def run(name,fn):
+                    try:
+                      fn()
+                      row={'viewport':[width,height],'test':name,'status':'PASS'}
+                    except Exception as e:
+                      row={'viewport':[width,height],'test':name,'status':'FAIL','error_type':type(e).__name__}
+                    results.append(row)
+                    print(json.dumps(row),flush=True)
+                    (evidence/'results.json').write_text(json.dumps(results,indent=2))
+                  def navigation():
+                    boot()
+                    initial=state()
+                    u=undo()
+                    p.locator('[data-detail=count]').click()
+                    p.locator('#group-count .chip[data-val=solo]').click()
+                    p.locator('#rd304-detail-done').click()
+                    assert p.evaluate("captureState().count")=='solo'
+                    assert undo()==u+1
+                    selected=state()
+                    p.evaluate("jumpToStep('step-2')")
+                    p.locator('[data-detail=pose]').click()
+                    p.locator('[data-scene-stage=category] .d32-facet').first.click()
+                    assert state()==selected and undo()==u+1
+                    p.locator('.d3-foot button:visible').filter(has_text='건너뛰기').click()
+                    assert state()==selected and undo()==u+1
+                    p.evaluate('undoLast()')
+                    assert state()==initial and undo()==u
+                  def storage():
+                    boot()
+                    p.evaluate("""async()=>{
+                      await rd210LoadThumbs();
+                      await cardThumbs.list();
+                      const data={presets:[{name:'QA neutral',state:captureState()}]};
+                      restoreBackup(data);
+                    }""")
+                    before=p.evaluate('JSON.stringify(readPresets())')
+                    p.reload(wait_until='load')
+                    p.wait_for_function("typeof window.rdV30Route==='function'")
+                    assert p.evaluate('JSON.stringify(readPresets())')==before
+                    with p.expect_download(timeout=20000) as di:
+                      p.evaluate('()=>{void exportSettings()}')
+                    path=Path(td)/f'backup-{width}.json'
+                    di.value.save_as(path)
+                    data=json.loads(path.read_text())
+                    assert data['presets'][0]['name']=='QA neutral'
+                    assert 'artistThumbs' in data and 'cardCovers' in data
+                    assert data['presets'][0]['state']['schemaVersion']==2
+                    path.unlink()
+                  def resave():
+                    boot()
+                    for i in (1,2):
+                      with p.expect_download(timeout=20000) as di:
+                        p.evaluate('()=>{downloadSelfHTML()}')
+                      filename=f'roundtrip-{width}-{i}.html'
+                      di.value.save_as(root/filename)
+                      assert (root/filename).stat().st_size>200000
+                      boot(filename)
+                      assert p.locator('#group-count').count()==1
+                      assert p.evaluate("typeof window.downloadSelfHTML==='function'")
+                      (root/filename).unlink()
+                  run('generic navigation, count state and undo',navigation)
+                  run('native app backup read, preset restore and reload',storage)
+                  if width in (476,933):run('two generation HTML save and reopen',resave)
+                  row={'viewport':[width,height],'test':'uncaught errors','status':'PASS' if not errors else 'FAIL','count':len(errors)}
+                  results.append(row);print(json.dumps(row),flush=True)
+                  c.close()
+                browser.close()
+            finally:
+              server.shutdown()
+          (evidence/'results.json').write_text(json.dumps(results,indent=2))
+          assert all(r['status']=='PASS' for r in results), 'Regression failed: see results'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-regression-evidence
+          path: qa-regression-evidence/
+          retention-days: 7
