@@ -1,9 +1,9 @@
 {
-  "web": "3.0.5",
+  "web": "3.1.0",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-27",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "HF-015 Rev.2 승인 원본 기반 홈 브랜드 및 내부 SVG 아이콘 시스템 1.0 적용. Android 1.1 및 코어 3.67.0 유지."
+  "note": "Design 3.0 1차 R2 빌더 편집 및 최종 확인. Android 1.1 및 코어 3.67.0 유지."
 }
