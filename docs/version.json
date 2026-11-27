@@ -1,9 +1,9 @@
 {
-  "web": "3.2.0",
+  "web": "3.2.1",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "R3.1 선택 픽토그램과 Smart Scene 적용."
+  "note": "선택 카드 정렬 및 장면 편집 화면 정리."
 }
