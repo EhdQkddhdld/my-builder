@@ -1,9 +1,9 @@
 {
-  "web": "3.0.3",
+  "web": "3.0.4",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-27",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "Design 2.5 R2 통합 창작 환경 개편. Android 1.1 및 코어 3.67.0 유지."
+  "note": "HF-001 Rev.2 상세 편집·선택 완료 및 주요 확정 버튼 우측 하단 배치. Android 1.1 및 코어 3.67.0 유지."
 }
