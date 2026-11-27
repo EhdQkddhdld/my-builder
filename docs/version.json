@@ -1,9 +1,9 @@
 {
-  "web": "3.1.0",
+  "web": "3.2.0",
   "web_file": "docs/index.html",
-  "web_updated": "2026-11-27",
+  "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "Design 3.0 1차 R2 빌더 편집 및 최종 확인. Android 1.1 및 코어 3.67.0 유지."
+  "note": "R3.1 선택 픽토그램과 Smart Scene 적용."
 }
