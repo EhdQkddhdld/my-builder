@@ -1,4 +1,15 @@
-# My Builder 실행 PLAYBOOK v1.0
+# My Builder 실행 PLAYBOOK v1.1
+
+## 최신 우선 규칙 — 2026-11-28 간소화 승인
+
+아래 규칙은 이 문서의 기존 단계별 산출물·검수·분업 지시보다 우선한다. 기술 보호 계약은 유지한다.
+
+- Chat Sol이 기획부터 배포까지 총괄하고 Work는 필요할 때 보조한다. 앱 업데이트는 승인된 범위 안에서 시작부터 완료까지 연속 수행한다.
+- 다음 버전부터 기존 main의 고정 `.github/workflows/auto-qa.yml`만 QA에 재사용한다. 버전별 QA 워크플로·verify 브랜치 금지. 기존 main Docs check·Pages·Android 배포 절차는 별개이며 유지한다.
+- 고정 QA: check_index, scan_secrets, git diff --check, 기존 Neon 확정 보호 블록 15종의 원문 동일성. 실패/누락은 PASS로 간주하지 않는다. 최신 main을 기준으로 후보를 확인한다.
+- UI/디자인 전용 변경에서 15종 불변 및 고정 Actions SUCCESS가 확인되면 Neon ZIP 검수 없이 승인 범위 내 배포한다. 엔진·체위/샷·저장소 변경에는 Neon 독립 검수 필요. 보호 블록의 의도된 변경은 실패/변경 사실을 숨기지 않고 명시 승인 및 해당 영역 독립 검수를 거친다. 단순 보호 블록 동일성이 모든 동작 검증을 의미하지 않는다.
+- 버전별 커밋은 1~2개로 압축한다. 체크포인트별 ZIP, REVIEW.md, SHA256 표, 단계별 patch 묶음은 만들지 않는다. 필요한 후보 식별자·Actions 링크·변경 요약만 남기고 검수 요청서는 Neon이 필요한 변경에 한해 복사 가능한 블록으로 제공한다.
+- v3.3.0 ATELIER는 사용자 명시 승인에 따라 기존 최종 Actions 3개 SUCCESS를 승계하고 추가 검수 없이 배포했다. 제품 배포 커밋 `d5d8796e0be199d52cf438b7bbc5fbcbc958d866`; [후보 QA](https://github.com/EhdQkddhdld/my-builder/actions/runs/46110505265), [Docs check](https://github.com/EhdQkddhdld/my-builder/actions/runs/46111848729), [Pages](https://github.com/EhdQkddhdld/my-builder/actions/runs/46111847951). 별도 실기기·서비스 HTTP·잔여 보호 계약 검사는 미확인이다.
 
 갱신: 2026-11-28. 이 문서는 모든 작업 환경의 공통 실행 절차다. 사용자 최신 결정 및 AGENTS.md의 기술 보호 계약을 함께 적용한다. 이 문서의 목적은 검사 생략이 아니라 **같은 작업의 반복 제거**다.
 

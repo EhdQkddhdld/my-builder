@@ -1,0 +1,41 @@
+name: My Builder Auto QA
+
+on:
+  push:
+    branches: ['qa/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auto-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auto-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - name: HTML and JavaScript contracts
+        run: python3 tools/check_index.py docs/index.html
+      - name: Secret scan
+        run: python3 tools/scan_secrets.py
+      - name: Diff and protected blocks
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$(git rev-parse refs/remotes/origin/main)"
+          git merge-base --is-ancestor "$base" HEAD || { echo "Candidate must be based on current main"; exit 1; }
+          git diff --check "$base" HEAD
+          baseline="$(mktemp)"
+          trap 'rm -f "$baseline"' EXIT
+          git show "$base:docs/index.html" > "$baseline"
+          node --expose-internals tools/check_protected.cjs "$baseline" docs/index.html
