@@ -1,6 +1,6 @@
 # Project ATELIER · v3.3.0 작업실
 
-상태: v3.3.0 최종 제품 후보 및 이전 구현 후보 실행 검사 성공. 최종 버전 전체 검사 진행 중. 독립 검수·배포 미완료.
+상태: v3.3.0 최종 후보 자동 QA 3개 job SUCCESS. 독립 검수 및 잔여 보호 계약·배포 미완료.
 
 - 기준 main: 205ba64810be7fc6e1bdeb0290f69317b925283e
 - 웹 기준: v3.2.1, APK 1.1 (versionCode 2)
@@ -79,3 +79,8 @@ Neon 별도 연구 명세는 이 디자인 보관 범위에 포함하지 않았�
 - QA 커밋 690dcd72730b8e0a1c4d7401de647e8f6588b900: 수정된 QA와 전체 테스트를 제품 QA 브랜치로 이관, 최종 버전 지문 고정, HTML 다운로드 파일명 검사 추가. [최종 run 46110505265](https://github.com/EhdQkddhdld/my-builder/actions/runs/46110505265) 공식 검사 성공 확인; 나머지 job 결과 대조 필요.
 - 전용 Draft PR #4는 QA 우회용, 병합 금지. GitHub 읽기 전용 REST 직접 조회 경로 확보(푸시 run/정확한 Git tree 포함).
 - 미검증 범위: 전체 캐릭터/포즈/샷 전수 검사 아님, 네 가지 부팅 조합, 상세 화면/시트 열린 상태의 HTML 저장, Escape/Android 실제 동작 및 일부 취소 경로 별도 확인 필요. Neon 독립 검수 및 배포 승인 전 main 반영 금지.
+
+## 최종 자동 QA 완료
+- [46110505265](https://github.com/EhdQkddhdld/my-builder/actions/runs/46110505265) SUCCESS, 검수 커밋 690dcd72730b8e0a1c4d7401de647e8f6588b900, 3개 job 모두 SUCCESS. 최종 버전 제품 지문 고정.
+- 공식 검사, 레일 4/4, 선택 요약·Dock 4/4, 저장/복원 7/7 및 v3.3.0 다운로드 이름, 중립 출력 60/60, 모의 API/앱 IndexedDB 검사 성공. 증거 artifacts 15249517337 (navigation), 15249348098 (output/API), 15248778369 (storage).
+- 다음: 독립 검수(Neon)와 미검증 계약 확인, 최종 배포 승인. 제품 후보 유지, main 미변경. 표본 검사와 실기기/전수 검증을 구분한다.
