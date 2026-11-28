@@ -1,9 +1,9 @@
 {
-  "web": "3.3.1",
+  "web": "3.3.2",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER Compact: 커버 가로 퀵바, 중복 스튜디오 제거, 원터치 이미지 생성."
+  "note": "ATELIER Compact: 하단 프롬프트·생성 Dock 제거, 편집 공간 확대."
 }
