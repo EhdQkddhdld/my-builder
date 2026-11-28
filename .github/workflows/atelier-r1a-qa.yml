@@ -288,11 +288,13 @@ jobs:
                         return {state,styles:styles.slice(0,4),lights};
                       }""")
                       configs=[]
-                      for style in fixture['styles']:
+                      assert fixture['styles'] and fixture['lights'], 'fixture options unavailable'
+                      style=fixture['styles'][0]
+                      for dot in (False,True):
                           for tone in range(5):
-                              configs.append({'artId':style,'style':style,'count':'solo','toneIdx':str(tone),'light':''})
-                      for light in fixture['lights'][:8]:
-                          configs.append({'artId':fixture['styles'][0],'style':fixture['styles'][0],'count':'solo','light':light,'toneIdx':'2'})
+                              for light in ['']+fixture['lights'][:5]:
+                                  configs.append({'artId':style,'style':style,'count':'solo','toneIdx':str(tone),'light':light,'dotToggleMode':dot})
+                      print(f'Fixture count: {len(configs)}, available styles: {len(fixture["styles"])}, available light choices: {len(fixture["lights"])}',flush=True)
                       assert len(configs)>=22
                       observed=set()
                       for i,config in enumerate(configs):
