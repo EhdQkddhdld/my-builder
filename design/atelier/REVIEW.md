@@ -22,3 +22,9 @@
 - 로컬 git 접속 DNS 실패, 공개 REST/Actions 웹 접근 실패, 푸시 run 검색 제한. 대체 경로: 제품과 분리한 qa/v3.3.0-atelier-verify, QA 전용 Draft PR #4 (base qa/v3.3.0-atelier, main 아님, 병합 금지), 검수 커밋 e8bcf80e52755bca0e57b8151f5c85284da019d2. 제품 blob 동일 조건을 체크하는 workflow, 구 검수의 백업/저장 2세대 검사 재사용.
 - [Actions 실행 46109691764](https://github.com/EhdQkddhdld/my-builder/actions/runs/46109691764): navigation job 140870234650의 Fingerprint and official checks 성공 확인(보안/HTML/git diff 및 후보 SHA-256). 브라우저 설치 및 storage-regression 140870234499 실행 중, 결론 미확인.
 - 미완료: Chromium 4 viewport/선택/Undo/백업/HTML 2세대 결과, 대표 22개 출력 비교, 실제 앱 IndexedDB 경로 및 모의 API 검사, Neon 독립 검수, 버전 정합, 배포 승인. 실제 NAI 호출 없음. main/Pages/APK 변경 금지.
+
+## R2/R3 재검사 완료
+- 이전 run 46109691764의 R1b 4개 화면 모두 상세 화면 진입 시 body의 가시성 대기에서 타임아웃. body는 상세 화면 class가 적용된 상태였고 페이지 오류 0건. QA 선택자 오류로 분류. 제품 수정 없이 상세 DOM의 표시/제거를 기다리도록 개선하고 선택 라벨은 클릭 전 추출: QA 커밋 df4777e95d99956df5da2d64c07de48783123803.
+- [run 46110006132](https://github.com/EhdQkddhdld/my-builder/actions/runs/46110006132) 두 job 모두 SUCCESS. 공식 보안/HTML/git diff, navigation 4/4, category/summary/Dock 4/4, storage/backup/HTML 2세대 7/7. 동일 제품 blob ecada16cc5b675934b638d24c6cff92702ecd3eb / SHA-256 dc43e47daa950f5f8a2f721140017045553b6173ccd7b41ac59998001fbeeadb.
+- 추가 QA 커밋 a7090736437900d99497018fc0556629a908d41a: 중립 설정 표본의 동일 출력 해시, 가로/세로 등 기존 데이터 및 모의 성공/429, 앱 갤러리 실제 IndexedDB 재열기 검사 추가. 결과 아직 미확인. 실제 외부 요청 차단.
+- 배포 미승인, 버전 메타데이터 확정 및 독립 검수 남음. main 및 APK 변경 없음.
