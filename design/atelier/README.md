@@ -1,6 +1,6 @@
 # Project ATELIER · v3.3.0 작업실
 
-상태: R2/R3 선택 요약 및 Dock 보완 후보와 QA 코드 보관. 최신 후보 실행 검사 미확인. 종합 QA·독립 검수 미완료. main/Pages/APK 변경 금지.
+상태: v3.3.0 최종 제품 후보 및 이전 구현 후보 실행 검사 성공. 최종 버전 전체 검사 진행 중. 독립 검수·배포 미완료.
 
 - 기준 main: 205ba64810be7fc6e1bdeb0290f69317b925283e
 - 웹 기준: v3.2.1, APK 1.1 (versionCode 2)
@@ -69,3 +69,13 @@ Neon 별도 연구 명세는 이 디자인 보관 범위에 포함하지 않았�
 ## 연속 진행 원칙 (사용자 요청)
 - 승인된 범위에서는 단계별 재승인이나 '다음' 입력 없이 구현·검사·보완·재검사를 현재 작업 환경에서 가능한 한 연속 수행한다. 중간 보고는 중단 지점이 아니다.
 - 범위 변경/중대 결정, 실제 해결 불가 장애, Neon 독립 검수 또는 배포 승인만 별도 요청한다. 실행 중인 외부 작업은 실제 결과만 보고하며 채팅 종료 후 자동 재개를 가정하지 않는다.
+
+## v3.3.0 최종 버전 후보
+- 제품 커밋: 7dcb8b3bdad7c869771de0f284abaa8515ed3399
+- index.html blob: 6109eb3e98a5d16c5d0386c2c3ea1dcf3cbd5476; SHA-256: 3ec7eb8ca93d217767d0efd34b5981044683b54952520bb5c5c1e5a398c2c0c7 (1444111 bytes)
+- version.json blob: 7ae004d1f246af2b128e6d3ddf7f2a7b36e0e666; SHA-256: d714fba378925f99d7190c1f71c34853f1c96e537fd6fb1ade649f111bbc87bd (269 bytes)
+- 기존 후보 대비 버전 문자열 및 패치노트 7개 위치만 수정, 역치환 시 이전 HTML 전체 동일 확인. version.json 웹 버전 및 안내 갱신, APK 1.1/code 2 불변.
+- 이전 구현 후보의 실행 증거: [46110006132](https://github.com/EhdQkddhdld/my-builder/actions/runs/46110006132) 공식 검사/레일 4/4/요약·Dock 4/4/저장 7/7 PASS; [46110345887](https://github.com/EhdQkddhdld/my-builder/actions/runs/46110345887) 중립 표본 60/60 출력/상태/슬롯/프롬프트 일치, 가짜 200/429, 이전 결과 보존 및 앱 IndexedDB 재열기 성공. 실제 외부 요청 0.
+- QA 커밋 690dcd72730b8e0a1c4d7401de647e8f6588b900: 수정된 QA와 전체 테스트를 제품 QA 브랜치로 이관, 최종 버전 지문 고정, HTML 다운로드 파일명 검사 추가. [최종 run 46110505265](https://github.com/EhdQkddhdld/my-builder/actions/runs/46110505265) 공식 검사 성공 확인; 나머지 job 결과 대조 필요.
+- 전용 Draft PR #4는 QA 우회용, 병합 금지. GitHub 읽기 전용 REST 직접 조회 경로 확보(푸시 run/정확한 Git tree 포함).
+- 미검증 범위: 전체 캐릭터/포즈/샷 전수 검사 아님, 네 가지 부팅 조합, 상세 화면/시트 열린 상태의 HTML 저장, Escape/Android 실제 동작 및 일부 취소 경로 별도 확인 필요. Neon 독립 검수 및 배포 승인 전 main 반영 금지.
