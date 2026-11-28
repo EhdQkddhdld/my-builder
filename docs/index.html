@@ -931,6 +931,90 @@ body.rd302 #rd-v30-detail .mb321-summary{display:flex;align-items:center;gap:12p
 .mb321-summary-copy{display:grid;gap:3px;min-width:0;overflow-wrap:anywhere}.mb321-summary-copy strong{font-size:14px;color:#e0dfe8}.mb321-summary-copy small{font-size:13px;line-height:1.45;color:var(--text-sec)}
 @media(max-width:340px){body.rd302 #rd-v30-detail .mb321-stage[data-scene-stage=category] .d3-visual{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
+
+<style id="rd-atelier-r1a-css">
+/* ATELIER R1a: general stage navigation only; existing detailed editors remain unchanged. */
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side) {
+  --atelier-rail-width:56px;
+  --atelier-rail-left:0px;
+  --atelier-rail-right:var(--atelier-rail-width);
+}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side[data-side="left"]) {
+  --atelier-rail-left:var(--atelier-rail-width);
+  --atelier-rail-right:0px;
+}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side) #rd-shell {
+  top:calc(var(--rd-top) + 54px)!important;
+  left:var(--atelier-rail-left)!important;
+  right:var(--atelier-rail-right)!important;
+  margin-top:0!important;
+}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side) #step-nav:not([hidden]) {
+  inset:calc(var(--rd-top) + 54px) 0 calc(var(--rd-v30-nav) + 66px) auto!important;
+  width:var(--atelier-rail-width)!important;
+  height:auto!important;
+  max-width:none!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:4px!important;
+  padding:6px 4px 52px!important;
+  margin:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  border:0!important;
+  border-inline-start:1px solid var(--outline)!important;
+  background:var(--surf-1)!important;
+}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side[data-side="left"]) #step-nav:not([hidden]) {
+  left:0!important;right:auto!important;
+  border-inline-start:0!important;border-inline-end:1px solid var(--outline)!important;
+}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side) #step-nav > button:not([hidden]):not(#rd-library-tab) {
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-width:44px!important;
+  min-height:64px!important;
+  height:auto!important;
+  max-height:none!important;
+  flex-direction:column!important;
+  padding:4px 2px!important;
+  gap:4px!important;
+  border-radius:10px!important;
+  font-size:13px!important;
+  line-height:1.2!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side) #step-nav .rd-tab-label {
+  font-size:13px!important;white-space:normal!important;text-align:center;
+}
+#rd-atelier-rail-side {display:none}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open) #rd-atelier-rail-side {
+  display:grid;place-items:center;position:fixed;z-index:111;
+  inset:auto 6px calc(var(--rd-v30-nav) + 70px) auto;
+  box-sizing:border-box;width:44px;height:44px;min-height:44px;
+  padding:0;border:1px solid var(--outline);border-radius:10px;
+  color:var(--text-sec);background:var(--surf-1);font:inherit;font-size:13px;
+  cursor:pointer;touch-action:manipulation;
+}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open) #rd-atelier-rail-side[data-side="left"] {
+  left:6px;right:auto;
+}
+body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side) .d3-index-foot {
+  left:var(--atelier-rail-left);right:var(--atelier-rail-right);
+}
+@media(min-width:840px){
+  body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):not(.rd-v30-preview-hidden):has(#rd-atelier-rail-side) .d3-index-foot {
+    right:calc(var(--atelier-rail-right) + (100% - var(--atelier-rail-width)) * .425);
+  }
+}
+@media(max-height:440px){
+  body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-rail-side) #step-nav > button:not([hidden]):not(#rd-library-tab) {min-height:48px!important}
+}
+@media(prefers-reduced-motion:reduce){#rd-atelier-rail-side{transition:none!important;animation:none!important}}
+</style>
 </head>
 <body>
 <script id="rd-v28-js">
@@ -16650,5 +16734,40 @@ function init(){const originalCopy=window.copyTracked;if(typeof originalCopy==='
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 
+</script>
+
+<script id="rd-atelier-r1a-js">
+(function(){
+  'use strict';
+  const id='rd-atelier-rail-side', key='rd_atelier_rail_v1';
+  function init(){
+    if(document.getElementById(id)||!document.getElementById('step-nav'))return;
+    const wide=window.matchMedia('(min-width:840px)');
+    const prefs={cover:'right',fold:'left'};
+    try{
+      const saved=JSON.parse(localStorage.getItem(key)||'null');
+      for(const mode of ['cover','fold'])if(saved&&['left','right'].includes(saved[mode]))prefs[mode]=saved[mode];
+    }catch(_){}
+    const b=document.createElement('button');
+    b.id=id;b.type='button';b.setAttribute('data-rd-ephemeral','');
+    const mode=()=>wide.matches?'fold':'cover';
+    function paint(){
+      const side=prefs[mode()], next=side==='left'?'오른쪽':'왼쪽';
+      b.dataset.side=side;
+      b.textContent=side==='left'?'→':'←';
+      b.setAttribute('aria-label','퀵레일을 '+next+'으로 이동');
+      b.title=(mode()==='fold'?'펼침':'커버')+' 화면 · 레일 위치 변경';
+    }
+    b.addEventListener('click',()=>{
+      const m=mode();
+      prefs[m]=prefs[m]==='left'?'right':'left';
+      try{localStorage.setItem(key,JSON.stringify(prefs))}catch(_){}
+      paint();
+    });
+    wide.addEventListener('change',paint);
+    paint();document.body.append(b);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
 </script>
 </body></html>
