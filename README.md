@@ -1,5 +1,9 @@
 # My Builder (젬의 NAI V5 프롬프트 빌더 리디자인)
 
+## COMMON STUDIO (v3.2, 2026-11-29)
+
+Google Drive의 COMMON STUDIO 폴더는 양 AI 공용 산출물·검수·인계 저장소다. GitHub 제품 코드·버전·QA·배포 기준은 유지하며 Chat Sol이 GitHub 쓰기 및 배포를 전담한다. Neon은 Drive에서 연구·자문·독립 검수와 수정안을 기록한다. 다음 담당자 메시지는 복사 가능한 블록(지원 시 복사 버튼)으로 필수 제공한다. 세부 운영은 PROJECT_GUIDELINES.md의 0절이 우선한다.
+
 - 웹 앱: https://ehdqkddhdld.github.io/my-builder/
 - Android APK: https://github.com/EhdQkddhdld/my-builder/releases/latest
 - 현재 버전은 [docs/version.json](docs/version.json)과 실제 main/Pages를 조회해 판단한다.
