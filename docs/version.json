@@ -1,9 +1,9 @@
 {
-  "web": "3.3.2",
+  "web": "3.3.3",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER Compact: 하단 프롬프트·생성 Dock 제거, 편집 공간 확대."
+  "note": "ATELIER Focus: 고정 작업공간 바 제거 및 편집 공간 확대."
 }
