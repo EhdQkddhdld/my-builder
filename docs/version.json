@@ -1,9 +1,9 @@
 {
-  "web": "3.3.12",
+  "web": "3.3.13",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER: 동작·신체 반응 단일 선택 유지, Smoothflow 구도 A/B 토글 및 연속 편집."
+  "note": "ATELIER: Seamless Flow, 4대분류 연속 이동과 선택·스크롤 유지, 컴팩트 화풍 카드."
 }
