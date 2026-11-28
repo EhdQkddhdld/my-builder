@@ -1,5 +1,7 @@
 # My Builder — 다른 AI 인수인계 규칙
 
+> **2026-11-28 운영 갱신:** AI 협업·QA·배포는 [PLAYBOOK.md](PLAYBOOK.md)가 최신 절차다. 아래 과거 역할/수동 배포 설명보다 우선한다. 사용자 승인, 필수 검사 및 Neon 독립 검수 없이 main 반영 금지. QA 브랜치 전체 병합 금지. 기술 보호 계약은 그대로 유효하다.
+
 대상: 네온 · 아스트라 · GPT · 그록 등. 이 저장소만 보고 이어서 수정할 수 있어야 합니다.
 저장소: https://github.com/EhdQkddhdld/my-builder (공개, 브랜치 main)
 웹 주소(앱이 여는 곳): https://ehdqkddhdld.github.io/my-builder/

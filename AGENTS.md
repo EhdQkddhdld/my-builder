@@ -1,12 +1,12 @@
-# ASTRA — My Builder 개발 운영 규약
+# My Builder — AI 개발 운영 규약
 
-사용자가 정한 프로젝트 역할명은 Astra(수석 엔지니어)다. Codex에서 이 역할의 개발 방식과 기록을 이어받는다. 이전 모델의 실제 기억이나 의식을 복제했다고 주장하지 않는다. 한국어로 소통한다.
+**2026-11-28 운영 갱신:** 모든 작업 환경은 먼저 [PLAYBOOK.md](PLAYBOOK.md)를 읽는다. 최신 사용자 승인 및 PLAYBOOK의 협업·검수·배포 절차가 과거 역할/경로 설명보다 우선한다. 아래 기술 보호 계약은 그대로 유지한다. 한국어로 소통하며 다른 환경의 실제 기억·권한을 공유한다고 가정하지 않는다.
 
 ## 1. 작업 시작 계약
 - 저장소: https://github.com/EhdQkddhdld/my-builder, 기준 브랜치 main. 웹: https://ehdqkddhdld.github.io/my-builder/.
-- 매 작업 시작 시 `ASTRA_HANDOFF.md`, `AI_HANDOFF_RULES.md`, `docs/CHANGELOG_handoff.md` 및 루트 `CHANGELOG_handoff.md`, `docs/version.json`, 필요한 최신 명세와 관련 코드, 기존 AGENTS 계층을 확인한다. 현재 HEAD와 변경 여부를 기록한다. 문서가 없거나 충돌하면 사실을 구분하고 사용자에게 알린다. 과거 문서가 최신 승인 사항을 덮어쓰면 안 된다.
-- 사용자 + Neon 기획 → Neon 최종 번호별 명세/완료 기준 → Astra(Codex) 구현 및 자체 검수 → Neon 독립 검수 → 사용자 승인 → GitHub 반영 및 사용자 폰 확인. Codex 단일 개발 환경을 유지한다. 구 Grok/Grok Bot/Ais 단계는 최신 흐름에 강제하지 않는다.
-- 최신 명세의 범위만 변경한다. 명세 미수신 상태에서는 읽기 전용 확인만 한다. 동시에 같은 기능을 수정하지 않는다. 현재 작업 트리의 사용자 변경을 보존한다. 범위 충돌, 누락, 위험은 명시한다. 승인 없이 main 푸시·병합·배포·APK 제작·릴리스 발행 금지. 필요한 경우 작업 브랜치/PR로 준비한다. 첫 이식 요청은 읽기 전용이다.
+- GitHub-first: `README.md`, `PLAYBOOK.md`, 최신 `main` HEAD와 `docs/version.json`, 대상 QA 브랜치의 README/승인 명세/후보 지문/실행 증거 및 관련 AGENTS 계층을 먼저 확인한다. `ASTRA_HANDOFF.md`, `AI_HANDOFF_RULES.md`, `docs/CHANGELOG_handoff.md`, 루트 `CHANGELOG_handoff.md`는 관련 보호 계약 및 역사 확인에 활용한다. 과거 상태·역할을 현재로 간주하지 않는다. 단순 작업에 전체 저장소 재분석을 강제하지 않는다.
+- Sol(기획·디자인·구현·자체 검수·QA 브랜치 관리; Chat 중심, Work 보조) → Neon Task(독립 검수) → 기존 업데이트 챗(최종 대조·배포) → 사용자 실기기 확인. 사용자는 방향·중대 변경·배포 승인권자다. Codex 및 Neon 일반 Chat을 사용하지 않는다. 동일 기능 동시 수정 금지. 개발실은 main을 배포하지 않고, 업데이트실은 제품을 임의 수정하지 않는다.
+- 최신 명세의 범위만 변경한다. 명세 미수신 상태에서는 읽기 전용 확인만 한다. 동시에 같은 기능을 수정하지 않는다. 현재 작업 트리의 사용자 변경을 보존한다. 범위 충돌, 누락, 위험은 명시한다. 승인 없이 main 푸시·병합·배포·APK 제작·릴리스 발행 금지. 필요한 경우 작업 브랜치/PR로 준비한다. 제품 수정은 승인 범위 내에서만 수행하고, QA 및 제품 커밋을 분리한다.
 
 ## 2. 파일과 버전 계약
 - 웹 본체는 단일 `docs/index.html`, 버전 정보는 `docs/version.json`. 웹 수정 시 두 파일의 버전과 필요한 화면/제목/패치노트/HTML 저장 파일명을 일치시킨다. 웹 전용 패치에서는 apk, apk_version_code와 android/를 수정하지 않는다. 인수인계 문서 변경은 해당 명세나 사용자 승인 범위에 따른다.
@@ -28,7 +28,7 @@
 - `downloadSelfHTML()`의 기존 원복 체인과 런타임 위젯 정리, API 키 제거 및 클린 재부팅을 보존. 상세 페이지/시트가 열린 상태 포함 2세대 재저장 검사.
 
 ## 5. 필수 검수
-- `python3 tools/scan_secrets.py`와 `python3 tools/check_index.py docs/index.html` 실제 실행. 실패 시 배포 금지. 검사 자체를 약화하지 않는다. Git diff/변경 경로/버전/해시를 확인한다.
+- `python3 tools/scan_secrets.py`, `python3 tools/check_index.py docs/index.html`, `git diff --check` 실제 실행 증거 필수. 정확한 후보와 영향 범위가 일치하는 유효 증거는 PLAYBOOK 기준으로 승계한다. 필수 실패/누락 시 배포 금지. 검사 자체를 약화하지 않는다. Git diff/변경 경로/버전/해시를 확인한다.
 - 최신 명세 기준 대표 22개 이상 출력 비교(메인·캐릭터·공통/개별 UC와 슬롯). 해당 기능의 실제 변경 이벤트, Undo 및 자동 연동, 백업/프리셋 복구, 네 가지 부팅/복원 조합, HTML 2세대, Back/Escape, Android 브리지 호환 검사. 선택값 및 난수 조건은 기준본과 동일하게 설정.
 - Galaxy 폴더블 기준 476×660, 933×612, 경계 839×660/840×660. 44px 이상 터치 영역, 일반 글자 13px 이상, 가로 넘침/겹침/중복 ID 0건, 보관함 이미지/핀 중첩 0건. 모션은 transform/opacity, reduced-motion, 입력 잠금 및 레이아웃 밀림 여부 확인. 해당 명세에 없는 UI 개편은 금지.
 - PASS/FAIL/부분 PASS/미실행을 분리. 모의 브리지나 대체 localStorage를 실기기/실제 IndexedDB 결과로 보고하지 않는다. 실험한 표본을 전수 검증으로 부풀리지 않는다. 실패 및 기준본 자체의 오류도 기록한다. 검사 로그·명령·비교 해시를 근거로 남긴다.
@@ -37,8 +37,8 @@
 - 사용자에게 쉬운 한국어로 변경 내용, 현재 상태, 남은 확인, 올릴 파일 및 경로, APK 재설치 필요 여부를 전달. 함수/DOM/키/기술 전문 용어는 별도의 Neon 검수 블록에만 기재한다. 과장·근거 없는 승인 선언 금지.
 - 배포 패키지: 수정 파일 전체본을 저장소 경로 그대로 ZIP에 담고 `검수보고서.md` 동봉. 보고서는 기본적으로 GitHub 업로드 제외(명시 승인 시 예외). 개별 다운로드, GitHub 대상 폴더 바로가기, 적용 순서, 실기기 체크를 같이 제공한다. 파일을 생성하지 못하면 경로/PR과 한계를 명시하고 가짜 링크 금지.
 - 웹 대상: https://github.com/EhdQkddhdld/my-builder/tree/main/docs ; 루트: https://github.com/EhdQkddhdld/my-builder ; Actions: https://github.com/EhdQkddhdld/my-builder/actions. 배포는 사용자 승인 후 docs-check 및 Pages 성공 확인. 웹만 변경 시 APK 재설치 불필요. 네이티브 수정은 별도 명세/승인 및 동일 서명, versionCode 증가 필요.
-- 기본 작업 환경 Codex 단일화, 사용자가 선택한 모델/추론 설정을 유지한다. 한도 절약을 위해 관련 영역만 탐색하고 테스트를 재사용하되 필수 검증을 생략하지 않는다. 승인 없는 반복 작업이나 모델 전환은 하지 않는다.
-- 최종 답변 끝에는 항상 다음 5개 항목을 최신 사실로 갱신한다.
+- Chat 기본, Work 보조. 사용자가 선택한 모델/추론 설정을 유지한다. 관련 영역만 탐색하고 정확한 후보의 유효 테스트 증거를 재사용하되 필수 검증을 생략하지 않는다. 승인 없는 반복 작업이나 모델 전환은 하지 않는다. 환경 장애 시 PLAYBOOK의 대체 경로를 사용한다.
+- 배포·중대 결정·대화 전환·외부 인계 시 다음 5개 항목을 최신 사실로 갱신한다. 일상 답변에는 생략한다.
 
 [동기화 갱신 블록]
 - 현재 배포 버전:
