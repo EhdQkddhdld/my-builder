@@ -1,0 +1,28 @@
+name: ATELIER source transfer
+on:
+  push:
+    branches: ['qa/v3.3.0-atelier']
+    paths: ['.github/workflows/atelier-source-transfer.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Record source identity
+        run: |
+          mkdir -p transfer
+          git rev-parse HEAD > transfer/commit.txt
+          git rev-parse HEAD:docs/index.html > transfer/index-blob.txt
+          sha256sum docs/index.html docs/version.json > transfer/SHA256.txt
+          cp docs/index.html docs/version.json transfer/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atelier-source
+          path: transfer/
+          retention-days: 3
