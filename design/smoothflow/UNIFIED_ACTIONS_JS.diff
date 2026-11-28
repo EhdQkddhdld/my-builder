@@ -1,0 +1,377 @@
+diff --git a/docs/index.html b/docs/index.html
+--- a/docs/index.html
++++ b/docs/index.html
+@@ -2396,6 +2397,9 @@
+   ["looking at viewer","카메라 응시"],["looking away","시선 피하기"],["looking at another","상대방 응시"],
+   ["looking up","올려다보기"],["looking back","뒤돌아보기"]
+ ];
++const NO_COMPATIBLE_ACTIONS="현재 체위·구도에서 선택 가능한 항목이 없어요";
++const MANUAL_TOUCHES=new Set(["breast squeezing","nipple tweak","breast sucking"]);
++const MANUAL_FEMALE_HANDS=new Set(["lift_breasts","cover_breasts","finger_to_mouth","double_peace","spread_pussy"]);
+ const EXTREMITY_CHIPS = [
+   ["curled toes","발가락 오므림"],["arched back","등·허리 휨"],["clenched hands","주먹 꽉 쥠"],
+   ["body blush","전신 홍조"],["stomach bulge","아랫배 볼록·깊은 압박"]
+@@ -2475,10 +2479,10 @@
+     ...(bindTags||getActiveValues("group-bind")),...(helplessTags||getActiveValues("group-helpless"))].filter(Boolean).join(", ");
+   const insertType=POSE_SHOT_CONFIG[id]?.insertType;
+   return {
+-    "curled toes":Boolean(shot&&!shot.hideHip&&dist!==CROP.THIGH&&(shot.showFeet||/\b(?:full body|wide shot)\b/i.test(dist))),
++    "curled toes":Boolean(shot&&!shot.hideHip&&shot.showFeet!==false&&/\b(?:full body|wide shot|feet focus)\b/i.test(dist)&&!/\b(?:cowboy shot|upper body)\b/i.test(dist)),
+     "arched back":!shot?.isCrop&&!/(?:mating-press|folded|piledriver|prone)/i.test(id)&&!/\bprone\b/i.test(girlPose),
+     "clenched hands":!/(?:paizuri|handjob|double-oral|1v5-full-service|1v1-lotus)/i.test(id)&&!OCCUPIED_HANDS_RE.test(handsSources),
+-    "body blush":dist!==CROP.FACE&&!isFurryChar,
++    "body blush":true,
+     "stomach bulge":["vaginal","dp"].includes(insertType)&&!isAfterSex&&!isPulledOut&&!shot?.hideHip&&
+       ![CROP.FACE,CROP.BREAST,CROP.ASS].includes(dist)&&!/\bfrom behind\b/i.test(angle)&&
+       !/\b(?:on stomach|all fours|prone|behind another|sex from behind)\b/i.test([girlPose,pose?.mainDesc,pose?.boy1Pose,pose?.boy2Pose].join(", "))&&
+@@ -2508,30 +2512,47 @@
+   const activeTouches=[...touchAssignments.b1,...touchAssignments.b2];
+   const handRules=evaluateFemaleHandRules({shot,pose,count,isAfterSex,outfit:context.outfit,
+     cloth:context.cloth,activeTouches,bindTags});
+-  for(const chip of document.querySelectorAll("#group-female-hand .chip")){
+-    const allowed=handRules.allowed.has(chip.dataset.val);
+-    chip.classList.toggle("hidden",!allowed);
+-    if(!allowed)chip.classList.remove("active");
+-    else if(chip.classList.contains("active"))clearCrossConflicts(chip.dataset.val);
++  const girlPose=[pose?.girlPose,shot?.posePatch].filter(Boolean).join(", ");
++  const poseSource=[girlPose,pose?.mainDesc,shot?.angleTag].filter(Boolean).join(", ");
++  const handsBusy=FEMALE_HANDS_BUSY_ID_RE.test(pose?.id||"")||FEMALE_HANDS_BUSY_POSE_RE.test(girlPose);
++  const restrained=FEMALE_HAND_RESTRAINT_RE.test(bindTags.join(", "));
++  const manualHandRules={
++    double_peace:!shot?.hideFace&&!shot?.isCrop&&!FEMALE_FACING_AWAY_RE.test(poseSource),
++    spread_pussy:count==="solo"&&!shot?.hideHip&&(!context.outfit||isZoneBare("hip",context.cloth))
++  };
++  const handChips=[...document.querySelectorAll("#group-female-hand .chip")];
++  for(const chip of handChips){
++    const id=chip.dataset.val;
++    const allowed=handRules.allowed.has(id);
++    // UI visibility is separate from effective legacy state and prompt eligibility.
++    chip.classList.toggle("hidden",!allowed||manualHandRules[id]===false);
++    chip.hidden=!MANUAL_FEMALE_HANDS.has(id);
+   }
+-  document.getElementById("wrap-female-hand").classList.toggle("hidden",!handRules.allowed.size);
+-  const showHandLimits=Boolean(count||pose||shot||context.outfit||bindTags.length||activeTouches.length);
+-  paintUiNotice("female-hand-limit-notice",showHandLimits&&handRules.reasons.length?
+-    "손동작 제한: "+handRules.reasons.join(" · "):"");
++  paintUiNotice("female-hand-limit-notice",handChips.some(chip=>!chip.hidden&&isShown(chip))?"":NO_COMPATIBLE_ACTIONS);
+   const showAddonLimits=Boolean(shot||context.outfit||context.cloth.length||context.addonRules.hasExternalEyeCover);
+   paintUiNotice("outfit-addon-notice",showAddonLimits&&context.addonRules.reasons.length?
+     "의상 애드온 제한: "+context.addonRules.reasons.join(" · "):"");
+   context.helplessTags=resolveEffectiveHelplessTags(pose,isAfterSex,context.hasEyeCover);
+   const gaze=evaluateGazeRules({shot,pose,count,...context});
+   const extremity=evaluateExtremityRules({shot,pose,isAfterSex,isPulledOut:isPulledOutFor(pose),...context});
+   document.getElementById("wrap-gaze").classList.toggle("hidden",Boolean(shot?.hideFace)||gaze.allowed.size===0);
+-  document.getElementById("wrap-extremity").classList.toggle("hidden",!Object.values(extremity).some(Boolean));
+-  for(const chip of document.querySelectorAll("#group-gaze .chip, #group-extremity .chip")){
+-    const tag=chip.dataset.val;
+-    const allowed=GAZE_TAGS_RE.test(tag)?gaze.allowed.has(tag):extremity[tag];
++  for(const chip of document.querySelectorAll("#group-gaze .chip")){
++    const allowed=gaze.allowed.has(chip.dataset.val);
+     chip.classList.toggle("hidden",!allowed);
+     if(!allowed)chip.classList.remove("active");
+   }
++  const manualExtremityRules={
++    "arched back":!shot?.hideChest&&!/\barched back\b/i.test(girlPose),
++    "clenched hands":!handsBusy&&!restrained&&!shot?.isCrop&&!(shot?.hideChest&&shot?.hideHip)
++  };
++  const extremityChips=[...document.querySelectorAll("#group-extremity .chip")];
++  const activeHand=getActiveSingle("group-female-hand");
++  for(const chip of extremityChips){
++    const tag=chip.dataset.val;
++    const handConflict=tag==="clenched hands"&&chip.classList.contains("active")&&FEMALE_HAND_MAP[activeHand]?.usesHands>0;
++    chip.classList.toggle("hidden",!extremity[tag]||handConflict||manualExtremityRules[tag]===false);
++    chip.hidden=tag==="stomach bulge";
++  }
+   const reasons=[];
+   if(gaze.eyesBlocked)reasons.push("안대·바이저 또는 감은 눈 상태(눈 응시 제한)");
+   if(gaze.rearLookback)reasons.push("후방 뒤돌아보기 샷(올려다보기·상대 응시 제외)");
+@@ -2541,8 +2562,7 @@
+   const gazeNotice=shot?.hideFace ? "얼굴이 가려진 샷이라 시선을 선택할 수 없어요." :
+     gaze.allowed.size<GAZE_CHIPS.length && reasons.length ? "시선 제한: "+reasons.join(" · ") : "";
+   paintUiNotice("gaze-limit-notice",gazeNotice);
+-  paintUiNotice("extremity-limit-notice",Object.values(extremity).some(Boolean) ? "" :
+-    "현재 체위·샷·캐릭터 조건에서 적용 가능한 말단 신체 반응이 없어요.");
++  paintUiNotice("extremity-limit-notice",extremityChips.some(chip=>!chip.hidden&&isShown(chip))?"":NO_COMPATIBLE_ACTIONS);
+ }
+ 
+ function applyDotDiet(text,onDrop=null){
+@@ -2780,7 +2800,7 @@
+     }
+   }
+   setupChips("group-gaze",true);
+-  setupChips("group-extremity");
++  setupChips("group-extremity",true);
+   for(const [slot,definitions] of Object.entries(CUSTOM_QUICK_TAGS)){
+     const group=document.getElementById("quick-"+slot);
+     group.replaceChildren();
+@@ -5627,24 +5647,15 @@
+   const host=document.getElementById("group-tough");
+   host.replaceChildren();
+   const primary=new Set(["kissing","ear biting","breast squeezing","grabbing another's hair","hair pulling","spanking"]);
+-  const archive=document.createElement("details");
++  const archive=document.createElement("div");
+   archive.id="tough-more-fold";
+-  archive.className="art-fold";
+-  const summary=document.createElement("summary");
+-  const heading=document.createElement("span");
+-  heading.textContent="나머지 접촉 12종 보기";
+-  summary.appendChild(heading);
+-  archive.appendChild(summary);
+-  for(const [zone,label] of Object.entries({head:"머리",chest:"상체",hip:"골반",leg:"다리"})){
++  for(const zone of ["head","chest","hip","leg"]){
+     for(const archived of [false,true]){
+       const entries=Object.entries(TOUGH_ACTION_LIB).filter(([key,spec])=>spec.zone===zone&&(primary.has(key)!==archived));
+       if(!entries.length)continue;
+       const block=document.createElement("div");
+       block.className="cat-block";
+       block.dataset.zoneBlock=zone;
+-      const title=document.createElement("div");
+-      title.className="cat-title";
+-      title.textContent=label;
+       const chips=document.createElement("div");
+       chips.className="btn-group";
+       for(const [key,spec] of entries){
+@@ -5655,7 +5666,7 @@
+         chip.textContent=spec.ko+" ("+spec.tag+")";
+         chips.appendChild(chip);
+       }
+-      block.append(title,chips);
++      block.appendChild(chips);
+       (archived?archive:host).appendChild(block);
+     }
+   }
+@@ -6114,9 +6125,9 @@
+   document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"});
+ };
+ window.clearSectionChips = function(containerId){
+-  pushUndo();
+   const container=document.getElementById(containerId);
+-  if(!container)return;
++  if(!container||(containerId==="group-tough"&&!container.querySelector(".chip.active")))return;
++  pushUndo();
+   container.querySelectorAll(".chip.active").forEach(function(c){
+     c.classList.remove("active");
+     c.removeAttribute("data-who");
+@@ -6963,12 +6974,12 @@
+   const keys = [...activeList,candidate].map(item => typeof item === "string" ? item : item.val);
+   return !allocateTouchesWithAdapter(keys,count,poseObj,getCurrentShot(),getActiveValues("group-cloth-state"),touchAssignments).unassigned.length;
+ }
+-function commitTouches(assign) {
++function commitTouches(assign, selected=[...assign.b1,...assign.b2]) {
+   touchAssignments = { b1: assign.b1.slice(), b2: assign.b2.slice() };
+   document.querySelectorAll("#group-tough .chip").forEach(chip => {
+     const key = chip.dataset.val;
+     const actor = assign.b1.includes(key) ? "남1" : assign.b2.includes(key) ? "남2" : "";
+-    chip.classList.toggle("active",!!actor);
++    chip.classList.toggle("active",selected.includes(key));
+     if (actor) chip.dataset.who = actor + (TOUGH_ACTION_LIB[key].cost.mouth ? "·입" : "");
+     else delete chip.dataset.who;
+   });
+@@ -7038,42 +7049,29 @@
+ }
+ 
+ function syncTouchChips(pose,shot,count) {
+-  const group = document.getElementById("group-tough"), hint = document.getElementById("hint-tough");
+-  if (!count || !pose || !shot) {
+-    commitTouches({b1:[],b2:[]});
+-    group.querySelectorAll(".chip,[data-zone-block]").forEach(chip=>chip.classList.add("hidden"));
+-    group.classList.add("hidden");
+-    paintUiNotice("solo-tough-notice","");
+-    hint.classList.remove("hidden");
+-    hint.textContent=!count?"등장 인원을 먼저 선택하세요.":!pose?"체위를 선택하세요.":"샷을 선택하세요.";
+-    return;
+-  }
+-  const cloth = getActiveValues("group-cloth-state");
+-  const active = Array.from(group.querySelectorAll(".chip.active"), chip=>chip.dataset.val);
+-  const packed = allocateTouchesWithAdapter(active,count,pose,shot,cloth,touchAssignments);
+-  commitTouches(packed.assign);
+-  const keys = [...packed.assign.b1,...packed.assign.b2];
+-  const pools = getRuntimeShotTouchPools(shot,pose,count,getRuntimeSmartStrong(shot,pose,count)), caps = resolveShotHandCaps(shot,count);
+-  group.classList.toggle("hidden",count === "solo");
+-  hint.classList.toggle("hidden",count === "solo");
+-  paintUiNotice("solo-tough-notice",count==="solo"?"✨ [단독(solo) 모드 적용 중] 상대 남캐가 없으므로 남캐 접촉 버튼들이 자동으로 숨겨졌어요.":"");
+-  for (const chip of group.querySelectorAll(".chip")) {
+-    const key = chip.dataset.val, spec = TOUGH_ACTION_LIB[key];
+-    const allowed = pools.b1.includes(key) || pools.b2.includes(key);
+-    chip.classList.toggle("hidden",!allowed);
+-    const bareBlocked = spec.requiresBare && !isZoneBare(spec.bareZone,cloth);
+-    chip.classList.toggle("dimmed",allowed && bareBlocked);
+-    const locked = allowed && !keys.includes(key) && (bareBlocked ||
+-      allocateTouchesWithAdapter([...keys,key],count,pose,shot,cloth,packed.assign).unassigned.length > 0);
+-    chip.classList.toggle("locked",locked);
+-  }
+-  for (const block of group.querySelectorAll("[data-zone-block]")) block.classList.toggle("hidden",!block.querySelector(".chip:not(.hidden)"));
+-  const actors = count === "1:1" ? ["b1"] : ["b1","b2"];
+-  hint.textContent = !pose ? "체위를 선택하세요." : !shot ? "샷을 선택하세요." : actors.map(a => {
+-    const spent = packed[a+"Hands"].reduce((n,k) => n + TOUGH_ACTION_LIB[k].cost.hands,0);
+-    const names = packed.assign[a].map(key => TOUGH_ACTION_LIB[key].ko).join(", ") || "선택 없음";
+-    return "남" + a.slice(1) + " · 손 " + spent + "/" + caps[a] + " · " + names;
+-  }).join("　/　");
++  const group=document.getElementById("group-tough");
++  const active=readStoredActionValues("group-tough");
++  const cloth=getActiveValues("group-cloth-state");
++  const caps=resolveShotHandCaps(shot,count);
++  const pools=getRuntimeShotTouchPools(shot,pose,count,getRuntimeSmartStrong(shot,pose,count));
++  const available=new Set([...MANUAL_TOUCHES].filter(key=>!shot?.hideChest&&
++    ["b1","b2"].some(actor=>caps[actor]>0&&pools[actor].includes(key)&&
++      (key!=="breast sucking"||!boyOralBlocked(pose?.[actor==="b1"?"boy1Pose":"boy2Pose"])))&&
++    !allocateTouchesWithAdapter([key],count,pose,shot,cloth,touchAssignments).unassigned.length));
++  const effective=active.filter(key=>!MANUAL_TOUCHES.has(key)||available.has(key));
++  const packed=allocateTouchesWithAdapter(effective,count,pose,shot,cloth,touchAssignments);
++  commitTouches(packed.assign,active);
++  const assigned=new Set([...packed.assign.b1,...packed.assign.b2]);
++  for(const chip of group.querySelectorAll(".chip")){
++    const key=chip.dataset.val;
++    const canSelect=available.has(key);
++    chip.classList.toggle("hidden",!assigned.has(key)&&!canSelect);
++    chip.hidden=!canSelect;
++  }
++  for(const block of group.querySelectorAll("[data-zone-block]")){
++    block.hidden=!block.querySelector(".chip:not([hidden])");
++  }
++  paintUiNotice("hint-tough",available.size?"":NO_COMPATIBLE_ACTIONS);
+ }
+ function distributeToughActions(count, pose) {
+   if (!count || count === "solo" || !pose || !pose.id || !getCurrentShot()) {
+@@ -7151,7 +7149,6 @@
+   const isAfterSex=phase==='aftersex';
+   const shot = getCurrentShot();
+   syncTouchChips(poseObj,shot,count);
+-  paintTouchLimitNotice(poseObj,shot,count);
+   const xray = document.querySelector('#group-overlay [data-val="xray"]');
+   const xrayAllowed = Boolean(poseObj && POSE_SHOT_CONFIG[poseObj.id]?.insertType && insertState!=="pulled_out");
+   xray.classList.toggle("locked",!xrayAllowed);
+@@ -7344,7 +7341,7 @@
+   const container=document.getElementById(containerId);
+   container.addEventListener('click',(e)=>{
+     const chip=e.target.closest('.chip');
+-    if(!chip||chip.classList.contains('hidden')||chip.classList.contains('filtered')||chip.classList.contains('locked')||chip.classList.contains('dimmed'))return;
++    if(!chip||chip.hidden||chip.classList.contains('hidden')||chip.classList.contains('filtered')||chip.classList.contains('locked')||chip.classList.contains('dimmed'))return;
+     if(containerId==="group-skin-balance"&&chip.dataset.defaultChip==="1"){
+       if(!container.querySelector(".chip.active"))return;
+       pushUndo();
+@@ -7353,14 +7350,16 @@
+       generate();
+       return;
+     }
+-    pushUndo();
+     const isCurrentlyActive=chip.classList.contains('active');
+     const clickedVal=chip.getAttribute('data-val');
++    const touch=containerId==="group-tough"?allocateCurrent(isCurrentlyActive?[]:[clickedVal]):null;
++    if(touch?.unassigned.length)return;
++    pushUndo();
+     if(isRadio){
+       container.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+       if(!isCurrentlyActive){
+         chip.classList.add('active');
+-        if(containerId==="group-female-hand")clearCrossConflicts(clickedVal);
++        if(containerId==="group-female-hand"||containerId==="group-extremity")clearCrossConflicts(clickedVal);
+         if(containerId==="group-cine-frame"&&CINE_FRAME_PRESETS[clickedVal]?.blocksOverlay)clearChips("#group-overlay .chip");
+         if(containerId==="group-male-quick"){
+           const build=MALE_QUICK_PRESETS[clickedVal].syncBuild;
+@@ -7396,21 +7395,16 @@
+         else if(val==='shirt lift'&&chip.classList.contains('active')&&toplessChip)toplessChip.classList.remove('active');
+       }
+       updateClothVisibility();
+-    }else if(containerId==='group-tough'){
+-      const active = getActiveValues(containerId).filter(key => key !== clickedVal);
+-      if (!isCurrentlyActive) active.push(clickedVal);
+-      const packed = allocateCurrent(active);
+-      if (packed.unassigned.length) return;
+-      commitTouches(packed.assign);
+-      if (!isCurrentlyActive) clearCrossConflicts(clickedVal);
++    }else if(touch){
++      commitTouches(touch.assign);
++      if(!isCurrentlyActive)clearCrossConflicts(clickedVal);
+     }else if(containerId==='group-helpless'||containerId==='group-bind'){
+       const val=chip.getAttribute('data-val');
+       const willActivate=!chip.classList.contains('active');
+       if(willActivate){chip.classList.add('active');clearCrossConflicts(val);}
+       else chip.classList.remove('active');
+     }else{
+       chip.classList.toggle('active');
+-      if(containerId==="group-extremity"&&!isCurrentlyActive)clearCrossConflicts(clickedVal);
+       if(containerId==="group-overlay"&&!isCurrentlyActive&&CINE_FRAME_PRESETS[getActiveSingle("group-cine-frame")]?.blocksOverlay){
+         clearChips("#group-cine-frame .chip");
+       }
+@@ -7534,6 +7528,9 @@
+   });
+ });
+ 
++function readStoredActionValues(containerId){
++  return Array.from(document.querySelectorAll(`#${containerId} .chip.active`),chip=>chip.dataset.val);
++}
+ function getActiveValues(containerId){
+   return Array.from(document.querySelectorAll(`#${containerId} .chip.active`)).filter(isShown).map(chip=>chip.dataset.val);
+ }
+@@ -10775,7 +10772,7 @@
+   paintUiNotice("step2-touch-summary",touchSummary+autoRollNote);
+   paintUiNotice("touch-summary-badge",touchSummary);
+   const assignedNames=showTouches?["b1","b2"].flatMap(assignedTouchNames):[];
+-  const toughOn=Array.from(document.querySelectorAll("#group-tough .chip.active"));
++  const toughOn=shownChips("#group-tough .chip.active");
+   let hands=0,mouthN=0;
+   toughOn.forEach(function(c){const cost=getToughActionCost({val:c.getAttribute("data-val")});hands+=cost.hands;mouthN+=cost.mouth;});
+   const bindN=document.querySelectorAll("#group-bind .chip.active").length;
+@@ -11026,15 +11023,15 @@
+     skin:getActiveSingle("group-skin"),body:getActiveSingle("group-body"),
+     commonOutfit:getActiveSingle("group-common-outfit"),maleBuild:getActiveSingle("group-male-build"),
+     maleSize:getActiveSingle("group-male-size"),customTags:readCustomTags(),
+-    maleQuick:getActiveSingle("group-male-quick"),femaleHand:getActiveSingle("group-female-hand"),
++    maleQuick:getActiveSingle("group-male-quick"),femaleHand:readStoredActionValues("group-female-hand")[0]||"",
+     outfitAddons:getActiveValues("group-outfit-addon"),skinBalance:getActiveSingle("group-skin-balance"),
+     cloth:getActiveValues("group-cloth-state"),phase:getActiveSingle("group-scene-phase"),
+     pose:getActiveSingle("group-pose-preset"),shot:getActiveSingle("group-shot"),closeupScope,insertState,
+     overlay:getActiveValues("group-overlay"),lens:getActiveSingle("group-lens"),
+     cineFrame:getActiveSingle("group-cine-frame"),bgEnrich,
+-    tough:getActiveValues("group-tough"),touchAssignments:{b1:[...touchAssignments.b1],b2:[...touchAssignments.b2]},
++    tough:readStoredActionValues("group-tough"),touchAssignments:{b1:[...touchAssignments.b1],b2:[...touchAssignments.b2]},
+     autoRollTouch:false,dotToggleMode,helpless:getActiveValues("group-helpless"),bind:getActiveValues("group-bind"),
+-    gaze:getActiveSingle("group-gaze"),extremity:getActiveValues("group-extremity"),t5Anchor,
++    gaze:getActiveSingle("group-gaze"),extremity:readStoredActionValues("group-extremity"),t5Anchor,
+     exprMode:getActiveSingle("group-expr-mode"),exprIdx:document.getElementById("rng-expr").value,
+     tier:document.getElementById("rng-tier").value,fluidIdx:document.getElementById("rng-fluid").value,
+     sweatIdx:document.getElementById("rng-sweat").value,motionIdx:document.getElementById("rng-motion").value,
+@@ -11389,7 +11386,7 @@
+     setChip("group-place",typeof state.place==="string"?state.place:"");
+     updateClothVisibility();
+     const packed = allocateCurrent(state.tough || [],state.touchAssignments || {b1:[],b2:[]});
+-    commitTouches(packed.assign);
++    commitTouches(packed.assign,state.tough||[]);
+     const helpless=Array.isArray(s.helpless)?s.helpless:[];
+     const migratedGaze=!s.gaze&&helpless.includes("looking away")?"looking away":"";
+     setChip("group-gaze",GAZE_CHIPS.some(([tag])=>tag===s.gaze)?s.gaze:migratedGaze);
+@@ -12042,24 +12039,6 @@
+   paintUiNotice("custom-tags-badge",filled ? filled+"칸 입력됨" : "");
+ }
+ 
+-function paintTouchLimitNotice(pose,shot,count){
+-  let message="";
+-  if(count&&count!=="solo"&&pose&&shot){
+-    const caps=resolveShotHandCaps(shot,count);
+-    const pools=getRuntimeShotTouchPools(shot,pose,count,getRuntimeSmartStrong(shot,pose,count));
+-    if(!caps.b1&&!caps.b2){
+-      message=!pools.b1.length&&!pools.b2.length?
+-        "현재 체위·샷은 손 고정 구도라 추가 접촉이 제한돼요.":"현재 체위·샷은 손이 고정되어 입 접촉만 선택할 수 있어요.";
+-    }else{
+-      const reasons=[];
+-      if(shownChips("#group-tough .chip.dimmed").length)reasons.push("흐린 칩은 해당 부위가 노출되면 선택할 수 있어요.");
+-      if(shownChips("#group-tough .chip.locked:not(.dimmed)").length)reasons.push("잠긴 칩은 남캐의 손·입 사용 한도에 도달했어요. 기존 접촉을 해제해 보세요.");
+-      message=reasons.join(" ");
+-    }
+-  }
+-  paintUiNotice("tough-limit-notice",message);
+-}
+-
+ function initSelectionControls(){
+   document.addEventListener("input",()=>clearTrayUndoNotice());
+   document.addEventListener("change",()=>clearTrayUndoNotice());
+@@ -12216,7 +12195,7 @@
+       if(!chip?.classList.contains("active")||!isShown(chip))continue;
+       add(actor+"|"+key,label,TOUGH_ACTION_LIB[key].ko,()=>{
+         const next={...touchAssignments,[actor]:touchAssignments[actor].filter(value=>value!==key)};
+-        commitTouches(next);
++        commitTouches(next,readStoredActionValues("group-tough").filter(value=>value!==key));
+       });
+     }
+   }
