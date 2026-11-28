@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "note": "My Builder 체위·샷 A/B 비교 테스트용 비파괴 B안 오버레이 테이블 (원본 레지스트리 불변)",
+  "poses": {
+    "1v5-filming-mix": {
+      "group": "G1_MULTI_CONFLICT",
+      "reason": "looking at viewer + leaning back + source#fellatio 3중 충돌 제거",
+      "girlPose": "straddling, leaning forward, open mouth, target#vaginal, target#anal, source#fellatio"
+    },
+    "1v5-sandwich-stack": {
+      "group": "G1_MULTI_CONFLICT",
+      "reason": "남1·남2 상하 스택과 여캐 자세 축 일치(lying on side → on back, stacked)",
+      "girlPose": "on back, sandwiched, stacked, leg lift, open mouth, target#vaginal, target#anal, source#fellatio"
+    },
+    "1v5-air-lift": {
+      "group": "G1_MULTI_CONFLICT",
+      "reason": "남1 between legs 위치 앵커 명시로 정면 3인 겹침 완화",
+      "boy1Pose": "standing, between legs, lifting person, holding her thighs, source#vaginal"
+    },
+    "1v5-full-service": {
+      "group": "G1_MULTI_CONFLICT",
+      "reason": "leaning back과 전방 구강(source#fellatio) 상체 방향 충돌 해소",
+      "girlPose": "straddling, leaning forward, open mouth, double handjob, target#vaginal, target#anal, source#fellatio, source#handjob"
+    },
+    "1v2-wall-dp": {
+      "group": "G1_MULTI_CONFLICT",
+      "reason": "앞뒤 2명 샌드위치 + 벽 밀착(against wall, hands on wall) 공간 모순 해소",
+      "girlPose": "standing, sandwiched between two men, beside wall, leg lift, target#vaginal, target#anal"
+    },
+    "1v2-mating-dp": {
+      "group": "G1_MULTI_CONFLICT",
+      "reason": "여캐 grabbing own thighs와 남1 pressing legs down 손 위치 겹침 해소",
+      "girlPose": "on back, reclining, spread legs, legs up, knees to chest, arms raised, target#vaginal, target#anal"
+    },
+    "solo-leg-lift": {
+      "group": "G2_SIDE_GAZE",
+      "reason": "측면 샷에서 미선택 시 고정 looking at viewer 제거",
+      "stripLookingAtViewerOnSide": true
+    },
+    "solo-sit": {
+      "group": "G2_SIDE_GAZE",
+      "reason": "측면 샷에서 미선택 시 고정 looking at viewer 제거",
+      "stripLookingAtViewerOnSide": true
+    },
+    "solo-wall": {
+      "group": "G2_SIDE_GAZE",
+      "reason": "측면 샷에서 미선택 시 고정 looking at viewer 제거",
+      "stripLookingAtViewerOnSide": true
+    },
+    "solo-foreplay-undress": {
+      "group": "G2_SIDE_GAZE",
+      "reason": "측면 샷에서 미선택 시 고정 looking at viewer 제거",
+      "stripLookingAtViewerOnSide": true
+    },
+    "1v1-missionary-flat": {
+      "group": "G2_SIDE_GAZE",
+      "reason": "측면 샷에서 미선택 시 고정 looking at viewer 제거",
+      "stripLookingAtViewerOnSide": true
+    },
+    "1v1-footjob": {
+      "group": "G2_SIDE_GAZE_AND_ANCHOR",
+      "reason": "측면 샷 시선 제거 + 남1 in front of her 위치 앵커 보강",
+      "stripLookingAtViewerOnSide": true,
+      "boy1Pose": "standing, in front of her, looking down, target#footjob"
+    },
+    "1v1-lotus": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 마주보기·허리 감싸기 앵커 보강",
+      "boy1Pose": "sitting, cross-legged, facing her, holding her waist, source#vaginal, source#penetration"
+    },
+    "1v1-wall": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 in front of her 앵커 보강",
+      "boy1Pose": "standing, in front of her, looming, kabedon, source#vaginal, source#penetration"
+    },
+    "1v1-suspend": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 in front of her, holding her thighs 보강",
+      "boy1Pose": "standing, in front of her, lifting person, holding her thighs, source#vaginal, source#penetration"
+    },
+    "1v1-amazon": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 beneath female, legs up 앵커 보강",
+      "boy1Pose": "on back, beneath female, legs up, on bed, source#vaginal, source#penetration"
+    },
+    "1v1-car-backseat": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 beneath female 앵커 보강",
+      "boy1Pose": "sitting, beneath female, leaning back, in car, backseat, source#vaginal, source#penetration"
+    },
+    "1v1-irrumatio": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 in front of her face, hand on back of head 보강",
+      "boy1Pose": "standing, in front of her face, hand on back of head, source#oral, source#irrumatio"
+    },
+    "1v1-fellatio": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 in front of her face 앵커 보강",
+      "boy1Pose": "standing, in front of her face, looking down, target#fellatio, target#oral"
+    },
+    "1v1-paizuri": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 in front of her 앵커 보강",
+      "boy1Pose": "standing, in front of her, looking down, target#paizuri"
+    },
+    "1v1-handjob": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 in front of her 앵커 보강",
+      "boy1Pose": "standing, in front of her, looking down, target#handjob"
+    },
+    "1v1-foreplay-wall-pin": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 in front of her 앵커 보강",
+      "boy1Pose": "standing, in front of her, looming, kabedon, hand on wall, pinning"
+    },
+    "1v2-foreplay-surround": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 beside her 앵커 보강",
+      "boy1Pose": "sitting, beside her, on left, leaning in, holding her thigh, source#groping"
+    },
+    "multi-foreplay-surround": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 beside her 앵커 보강",
+      "boy1Pose": "kneeling, beside her, on left, leaning in, holding her thigh, source#groping"
+    },
+    "1v5-foreplay-press": {
+      "group": "G3_ANCHOR",
+      "reason": "남1 beside her 앵커 보강",
+      "boy1Pose": "kneeling, beside her, on left, leaning in, holding her thigh, source#groping"
+    },
+    "1v2-after-spit": {
+      "group": "G4_AFTER_SEX",
+      "reason": "구강 진행 중 오인 태그(hand on back of head) 완화",
+      "boy2Pose": "standing, in front, resting"
+    },
+    "1v2-after-oral": {
+      "group": "G4_AFTER_SEX",
+      "reason": "구강 진행 중 오인 태그(hand on back of head) 완화",
+      "boy1Pose": "standing, in front, resting"
+    },
+    "1v1-after-cowgirl": {
+      "group": "G4_AFTER_SEX",
+      "reason": "진행 중 straddling 완화 + 남1 beneath female 보강",
+      "girlPose": "lying on his chest, collapsed, after vaginal",
+      "boy1Pose": "on back, beneath female, on bed"
+    },
+    "1v2-after-cowgirl": {
+      "group": "G4_AFTER_SEX",
+      "reason": "진행 중 straddling 완화 + 남1 beneath female 보강",
+      "girlPose": "lying on his chest, collapsed, after vaginal",
+      "boy1Pose": "on back, beneath female, on bed, holding her waist"
+    },
+    "1v1-after-oral": {
+      "group": "G4_AFTER_SEX",
+      "reason": "남1 in front of her 앵커 보강",
+      "boy1Pose": "standing, in front of her, looking down"
+    }
+  },
+  "shots": {
+    "foot-front-cowboy": {
+      "group": "G2_FOOTJOB_DIST",
+      "reason": "풋잡 발 잘림 방지",
+      "distTag": "full body, feet focus"
+    },
+    "foot-pov-low": {
+      "group": "G2_FOOTJOB_DIST",
+      "reason": "1인칭 풋잡 발 잘림 방지",
+      "distTag": "full body, feet focus"
+    }
+  }
+}
