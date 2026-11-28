@@ -41,6 +41,10 @@ try:
                     assert summary.locator('.atelier-summary-total').first.text_content()==str(rail_total)+'개'
                     assert full.locator('.atelier-tag').count()==rail_total,'summary list and rail count differ'
                     assert summary.is_visible() and dock.is_visible()
+                    assert dock.locator('.atelier-gen-size').text_content()==page.locator('#rd-nai-size').input_value().replace('x',' × ')
+                    expected_params='Steps '+page.locator('#rd-nai-steps').input_value()+' · CFG '+page.locator('#rd-nai-scale').input_value()
+                    assert dock.locator('.atelier-gen-params').text_content()==expected_params
+                    assert dock.get_by_role('button',name='메인 프롬프트 복사').is_visible()
                     a=summary.bounding_box()
                     d=dock.bounding_box()
                     m=page.locator('#rd-main').bounding_box()
