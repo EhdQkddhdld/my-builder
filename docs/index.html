@@ -1603,9 +1603,9 @@ window.onerror=function(msg,src,line,col){var el=document.getElementById("boot-e
 
 <div class="sub-group" data-sub-key="react" id="wrap-react"><div class="sub-body">
 <div class="row-head">
-<label>2-7. 여캐 표정 · 신체 반응 <span class="sub-label">(분위기 결 + 0~5단계 강도 · 세부 칩과 조합 가능)</span></label>
+<label>표정 및 시선 <span class="sub-label">(표정 선택 · 강도 · 시선)</span></label>
 <div class="head-btns">
-<button class="btn-clear" onclick="clearReactionSection()" type="button">✕ 비우기</button>
+<button class="btn-clear" onclick="clearReactionSection()" type="button" title="다른 메뉴의 기존 반응 선택도 함께 초기화됩니다." aria-label="전체 반응 초기화">✕ 전체 초기화</button>
 <button class="btn-roll" onclick="rollHelpless()" type="button">🎲 랜덤</button>
 </div>
 </div>
@@ -16143,7 +16143,7 @@ const detailDefs=[
  ['cloth',1,'복장 변경',['wrap-cloth-state','wrap-common-outfit','wrap-outfit-addon'],['group-cloth-state','group-common-outfit']],
  ['appearance',1,'외형 · 피부 상태',['wrap-body','wrap-skin-balance','helpless-fold'],['group-body','group-skin-balance']],
  ['pose',2,'장면 구성',()=>[...document.querySelectorAll('#step2-panes > [data-pane=pose] > *,#step2-panes > [data-pane=cam] > *')],['group-scene-phase','group-pose-preset','group-shot','group-lens','group-cine-frame']],
- ['body',2,'동작 및 상호작용',['wrap-touch-all','wrap-female-hand','female-hand-limit-notice','wrap-extremity','extremity-limit-notice','helpless-fold','wrap-bind'],['group-tough','group-female-hand','group-extremity','group-bind']],
+ ['body',2,'동작 및 상호작용',['wrap-touch-all','wrap-bind','wrap-extremity','extremity-limit-notice','wrap-female-hand','female-hand-limit-notice','helpless-fold'],['group-tough','group-female-hand','group-extremity','group-bind']],
  ['react',2,'표정 및 시선',['wrap-react','helpless-fold'],['group-expr-mode','group-gaze']],
  ['env',3,'장소',['wrap-env'],['group-place']],
  ['light',3,'조명',()=>[$('group-light').parentElement],['group-light']],
