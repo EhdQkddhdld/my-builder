@@ -1,6 +1,6 @@
 # Project ATELIER · v3.3.0 작업실
 
-상태: R1a 단계 레일 제품 체크포인트 등록. 최종 구현·필수 QA·독립 검수 미완료. main/Pages/APK 변경 금지.
+상태: R1a 단계 레일 제품 체크포인트 및 한정 실행 검사 통과. 최종 구현·전체 QA·독립 검수 미완료. main/Pages/APK 변경 금지.
 
 - 기준 main: 205ba64810be7fc6e1bdeb0290f69317b925283e
 - 웹 기준: v3.2.1, APK 1.1 (versionCode 2)
@@ -27,5 +27,5 @@ Neon 별도 연구 명세는 이 디자인 보관 범위에 포함하지 않았�
 - R1a 제품 blob: f8f10bb2bb841da971a7fc35ab79bcfe53707573
 - QA 코드 커밋: dc7778938bf9350df4ca57b36e4033bf78bb46fa
 - [체크포인트](CHECKPOINT_R1a.md), [검사 코드](qa/r1a.py).
-- [Actions 실행 기록](https://github.com/EhdQkddhdld/my-builder/actions?query=branch%3Aqa%2Fv3.3.0-atelier). 필수 검사 완료 여부 및 결과를 확인한 뒤 이어서 작업한다.
-- 다음 단계: R1a 실행 검사 및 실패 원인 보완 → 승인 시안과 나머지 일반 UI 연결. 제품 후보와 QA 기록을 구분하고 배포 승인 전 main을 변경하지 않는다.
+- [Actions 실행 기록](https://github.com/EhdQkddhdld/my-builder/actions?query=branch%3Aqa%2Fv3.3.0-atelier). R1a 한정 검사 완료. [검사 결과](QA_R1a_RESULT.md) 참고.
+- 다음 단계: 승인 시안과 나머지 일반 UI 연결 및 영향 경로 검수. 승인 시안 전체와 R1a 검사 범위를 구분한다. 제품 후보와 QA 기록을 구분하고 배포 승인 전 main을 변경하지 않는다.
