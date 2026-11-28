@@ -1,4 +1,36 @@
-# My Builder 실행 PLAYBOOK v1.1
+# My Builder 실행 PLAYBOOK v1.2
+
+## v3.3.0 이후 원클릭 업데이트·데이터 분리 지침 (Neon 설계, 2026-11-28)
+
+목표: 업데이트 3~5분, 고정 CI 단일 job 30초, 체위 데이터 수정 10초, 데이터 검사 5초, Fold8 확인 1분. 실제 측정 전 달성 보장 금지. 개편 등급 L2. 이 지침 등록 자체는 구현 완료나 제품 배포 승인이 아니다.
+
+### 1. 고정 QA와 두 트랙
+- 이미 등록된 `.github/workflows/auto-qa.yml`, `tools/check_protected.cjs`를 재사용한다. Neon 원안의 release-gate.yml, check_protected.py는 동일 역할의 제안 파일명이다. 중복 생성 금지. 실제 검증 후 필요 시 기존 파일을 통합·교체하되 고정 QA는 하나만 유지. Docs check, Pages, Android 배포는 별개다.
+- 모든 제품 관련 PR/브랜치 푸시에서 고정 QA를 재사용하도록 정비한다. check_index, scan_secrets, main 대비 git diff --check, 보호 블록 15종 원문/해시 비교를 단일 job에서 수행. 누락·중복·파싱 실패·기준 오류는 실패 처리.
+- 보호 목록: assignTough, scanFlatGroups, validateShotRegistry, rd210ValidSlots, canAssignTough, applyFramingCascade, generate, POSE_SHOT_CONFIG, SHOT_TEMPLATES, EXTRA_SHOT_DEFS, CONFLICT_GROUPS, POSE_BY_COUNT, CORE_BED_1V1_IDS, ARCHIVED_POSE_IDS, TOUGH_ACTION_LIB.
+- 검사 요약 목표: PROTECTED_CHANGED=0 (FAST_TRACK) 또는 PROTECTED_CHANGED=N (DEEP_TRACK). FAST_TRACK은 보호 블록 불변, UI/문구/디자인/아이콘 전용 변경, 공식 검사 성공 조건 모두 충족 시 적용. 엔진·체위/샷·저장소/API·데이터 로더 변경은 보호 블록 수와 무관하게 DEEP_TRACK. 검사 실패를 성공으로 위장하지 않는다.
+- FAST_TRACK: 반복 4해상도 캡처·2세대 저장·60표본·IndexedDB 풀코스와 Neon ZIP 검수 생략. 사용자 배포 승인 1회(조건부 승인 포함) 후 동일 후보 즉시 main 반영→Pages 성공→Fold8 확인. PR Merge도 승인 파일만 반영하는 동등한 경로일 때 허용.
+- DEEP_TRACK: Neon 독립 검수, 영향 범위 출력/저장 회귀 후 승인 배포. QA 실제 NAI 호출 금지.
+- 버전별 신규 QA yml·verify 브랜치/PR·ZIP·REVIEW.md·patch 묶음·수동 SHA256 표 금지. 커밋 1~2개와 Actions 링크로 관리. 과거 QA 브랜치/PR/워크플로는 증거 보존 후 필요시 정리하며 이번 지침 등록에서는 삭제하지 않는다.
+
+### 2. Fold8 원클릭 최신 버전 적용 (후속 구현)
+- 부팅 또는 설정 진입 시 `fetch('./version.json?t=' + Date.now(), { cache: 'no-store' })`로 원격 web 버전 조회. 오프라인·조회 실패는 조용히 무시. 현재 rd-version과 다르면 상단 배너 또는 설정 상단에 '새 버전(vX.Y.Z) 바로 적용' 표시.
+- 클릭 즉시 saveDraft()로 초안을 안전 저장하고 성공 확인. 생성 busy 중 재로드 차단 또는 안전 종료 후 허용, 실패 시 화면·데이터 보존. My Builder 소유 Cache Storage/Service Worker 캐시만 정리.
+- `location.replace(location.pathname + '?v=' + encodeURIComponent(remoteVer) + '&t=' + Date.now())`로 캐시 우회 재로드. 새 버전·초안·프리셋·갤러리·화풍 보존 확인. localStorage/IndexedDB 전체 삭제 금지. APK 변경 없이 웹 범위에서 구현.
+
+### 3. 체위·샷 데이터 분리 (후속 구현, DEEP_TRACK)
+- 신규 docs/poses.json 데이터 스키마 1: schemaVersion, POSE_BY_COUNT, POSE_AFTER_BY_COUNT, SHOT_TEMPLATES, EXTRA_SHOT_DEFS, POSE_SHOT_CONFIG, CORE_BED_1V1_IDS, ARCHIVED_POSE_IDS. 사용자 저장 schemaVersion:2와 별개. 기존 ID·태그·순서·출력 및 Set 등 자료형 의미 보존.
+- tools/check_poses.py에서 JSON·스키마·중복·참조 및 validateShotRegistry 동등 무결성 검증 후 고정 QA에 편입. 외부 데이터도 보호 블록에 대응해 기준/후보 비교하며 HTML만 비교해 FAST_TRACK으로 오분류 금지.
+- 웹/Pages/WebView 부팅 시 `fetch('./poses.json?v=' + encodeURIComponent(APP_VERSION), { cache: 'no-store' })`로 로드. 검증 완료 데이터만 원자적으로 적용하고 validateShotRegistry 통과 후 초기화. 오프라인/file://·네트워크·파싱/검증 실패 시 내장 fallback 또는 검증된 호환 캐시로 안전 부팅. 무한 대기·부분 레지스트리 적용 금지.
+- downloadSelfHTML()은 현재 유효한 메모리 레지스트리를 내장 fallback에 직렬화하고 클린 저장 규약 유지. 오프라인 단일 HTML 재열기·2세대 재저장·출력/복원/실제 저장소 회귀 확인. 외부 데이터는 실행 코드가 아닌 검증된 JSON으로 처리.
+- 전환 승인·검수 후 태그 수정은 poses.json 중심으로 하되 필요한 version.json도 갱신해 버전 감지 및 호환성 보장. 데이터 변경은 정밀 트랙. 현재 index.html/version.json 제품 계약 유지, 승인된 전환 이후 poses.json을 배포 허용 파일에 추가.
+
+### 4. 완료 기준과 적용 순서
+1. 고정 QA 실제 실행 검증 및 두 트랙 분류 정비 (현재 파일 등록 완료, 실행 검증 미완료).
+2. 원클릭 최신 버전 적용 버튼 구현·검수·승인 배포.
+3. poses.json 분리·검증 도구·fallback/직렬화 연동·Neon 정밀 검수·승인 배포.
+기존 엔진 동작, 저장 schemaVersion:2, 백업/복원, IndexedDB, 갤러리 200장, ba 원본 화풍/UC, Android app.mybuilder APK 보호. 신규 innerHTML/Math.random/외부 CDN 0건. 승인된 명세 밖 제품 변경 금지.
+
 
 ## 최신 우선 규칙 — 2026-11-28 간소화 승인
 
