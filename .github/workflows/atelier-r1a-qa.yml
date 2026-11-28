@@ -1,8 +1,8 @@
-name: ATELIER R1a navigation QA
+name: ATELIER R1a/R1b navigation QA
 on:
   push:
     branches: ['qa/v3.3.0-atelier']
-    paths: ['docs/index.html','.github/workflows/atelier-r1a-qa.yml','design/atelier/qa/r1a.py']
+    paths: ['docs/index.html','.github/workflows/atelier-r1a-qa.yml','design/atelier/qa/r1a.py','design/atelier/qa/r1b.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -36,10 +36,12 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Navigation browser tests
         run: python3 design/atelier/qa/r1a.py
+      - name: Category and selected-count browser tests
+        run: python3 design/atelier/qa/r1b.py
       - name: Evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: atelier-r1a-evidence
+          name: atelier-r1b-evidence
           path: qa-evidence/
           retention-days: 7
