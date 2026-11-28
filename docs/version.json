@@ -1,9 +1,9 @@
 {
-  "web": "3.3.3",
+  "web": "3.3.4",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER Focus: 고정 작업공간 바 제거 및 편집 공간 확대."
+  "note": "ATELIER Basic: 그림체 3열 고정, 기본 메뉴에 등장 인원 통합."
 }
