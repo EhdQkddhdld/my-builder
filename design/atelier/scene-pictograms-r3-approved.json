@@ -1,0 +1,584 @@
+{
+  "distance": {
+    "가슴 초근접": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M12 17 V8 H21 M59 8 H68 V17 M68 53 V62 H59 M21 62 H12 V53",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.4",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M35 11 H45 V16 C53 17 59 22 61 30 L57 56 H23 L19 30 C21 22 27 17 35 16 Z",
+            "fill": "currentColor",
+            "opacity": ".28"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "31.5",
+            "cy": "36.5",
+            "r": "9.5",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "48.5",
+            "cy": "36.5",
+            "r": "9.5",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M22.5 39 C25 47 36 47 40 41 C44 47 55 47 57.5 39",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.4",
+            "stroke-linecap": "round"
+          }
+        ]
+      ]
+    ],
+    "결합부 초근접": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M12 17 V8 H21 M59 8 H68 V17 M68 53 V62 H59 M21 62 H12 V53",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.4",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M27 13 H53 C57 21 61 29 61 38 L57 57 H47 L40 42 L33 57 H23 L19 38 C19 29 23 21 27 13 Z",
+            "fill": "currentColor",
+            "opacity": ".32"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M25 27 L40 44 L55 27",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "3",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "40",
+            "cy": "36",
+            "r": "4.2",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M40 42 V50",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.4",
+            "stroke-linecap": "round"
+          }
+        ]
+      ]
+    ],
+    "엉덩이 초근접": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M12 17 V8 H21 M59 8 H68 V17 M68 53 V62 H59 M21 62 H12 V53",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.4",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M30 13 H50 L54 24 C61 32 62 47 52 54 C46 57 42 54 40 50 C38 54 34 57 28 54 C18 47 19 32 26 24 Z",
+            "fill": "currentColor",
+            "opacity": ".88"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M40 22 V48",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.2",
+            "stroke-linecap": "round",
+            "opacity": ".3"
+          }
+        ]
+      ]
+    ],
+    "허벅지 초근접": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M12 17 V8 H21 M59 8 H68 V17 M68 53 V62 H59 M21 62 H12 V53",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.4",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M21 14 H59 C60 28 57 44 54 57 H44 C43 44 42 33 40 26 C38 33 37 44 36 57 H26 C23 44 20 28 21 14 Z",
+            "fill": "currentColor",
+            "opacity": ".9"
+          }
+        ]
+      ]
+    ],
+    "와이드 전신": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M7 18 V10 H16 M64 10 H73 V18 M73 52 V60 H64 M16 60 H7 V52",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.4",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M13 52 H67",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "1.8",
+            "stroke-linecap": "round",
+            "opacity": ".3"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "40",
+            "cy": "21",
+            "r": "4.5",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M36 27 H44 L47 41 H43 L42.5 52 H37.5 L37 41 H33 Z",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M18 35 H26 M54 35 H62",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "1.8",
+            "stroke-linecap": "round",
+            "opacity": ".35"
+          }
+        ]
+      ]
+    ]
+  },
+  "angle": {
+    "1인칭 POV": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M12 24 Q40 7 68 24 Q40 41 12 24 Z",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.5",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "40",
+            "cy": "24",
+            "r": "6.5",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M24 60 C27 48 33 44 40 44 C47 44 53 48 56 60 Z",
+            "fill": "currentColor",
+            "opacity": ".38"
+          }
+        ]
+      ]
+    ],
+    "1인칭 뒤에서": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M10 15 Q19 8.5 28 15 Q19 21.5 10 15 Z",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.1",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "19",
+            "cy": "15",
+            "r": "2.7",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "48",
+            "cy": "26",
+            "r": "9.5",
+            "fill": "currentColor",
+            "opacity": ".88"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M31 60 C34 44 40 39 48 39 C56 39 62 44 65 60 Z",
+            "fill": "currentColor",
+            "opacity": ".48"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M14 48 L29 41 M23 38 L29 41 L26 47",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.6",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ]
+      ]
+    ],
+    "1인칭 아래에서": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M10 15 Q19 8.5 28 15 Q19 21.5 10 15 Z",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.1",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "19",
+            "cy": "15",
+            "r": "2.7",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "49",
+            "cy": "19",
+            "r": "8.5",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M35 41 C37 32 42 29 49 29 C56 29 61 32 63 41 Z",
+            "fill": "currentColor",
+            "opacity": ".6"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M26 60 L41 45 M34 45 H41 V52",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.8",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ]
+      ]
+    ],
+    "1인칭 위에서": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M10 15 Q19 8.5 28 15 Q19 21.5 10 15 Z",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.1",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "19",
+            "cy": "15",
+            "r": "2.7",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M26 24 L41 38 M41 31 V38 H34",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.8",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "51",
+            "cy": "43",
+            "r": "8",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M38 62 C40 54 45 51 51 51 C57 51 62 54 64 62 Z",
+            "fill": "currentColor",
+            "opacity": ".6"
+          }
+        ]
+      ]
+    ],
+    "뒤에서(뒤돌아봄)": [
+      "0 0 80 70",
+      [
+        [
+          "circle",
+          {
+            "cx": "38",
+            "cy": "24",
+            "r": "11",
+            "fill": "currentColor",
+            "opacity": ".9"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M18 62 C21 44 29 38 38 38 C47 38 55 44 58 62 Z",
+            "fill": "currentColor",
+            "opacity": ".42"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M54 17 C65 21 65 34 51 36 M56 31 L51 36 L56 41",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.8",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ]
+      ]
+    ],
+    "뒤에서(약부감)": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M12 13 L28 26 M28 19 V26 H21",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.8",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "47",
+            "cy": "27",
+            "r": "10.5",
+            "fill": "currentColor",
+            "opacity": ".9"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M27 62 C30 46 38 41 47 41 C56 41 64 46 67 62 Z",
+            "fill": "currentColor",
+            "opacity": ".42"
+          }
+        ]
+      ]
+    ],
+    "정면": [
+      "0 0 80 70",
+      [
+        [
+          "circle",
+          {
+            "cx": "40",
+            "cy": "22",
+            "r": "12",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M20 62 C23 44 31 38 40 38 C49 38 57 44 60 62 Z",
+            "fill": "currentColor",
+            "opacity": ".88"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M13 22 H19 M61 22 H67",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.4",
+            "stroke-linecap": "round",
+            "opacity": ".4"
+          }
+        ]
+      ]
+    ],
+    "아래에서": [
+      "0 0 80 70",
+      [
+        [
+          "circle",
+          {
+            "cx": "40",
+            "cy": "18",
+            "r": "10",
+            "fill": "currentColor"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M23 43 C26 33 32 30 40 30 C48 30 54 33 57 43 Z",
+            "fill": "currentColor",
+            "opacity": ".78"
+          }
+        ],
+        [
+          "path",
+          {
+            "d": "M40 62 V47 M33 53 L40 46 L47 53",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.8",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ]
+      ]
+    ],
+    "위에서": [
+      "0 0 80 70",
+      [
+        [
+          "path",
+          {
+            "d": "M40 8 V23 M33 17 L40 24 L47 17",
+            "fill": "none",
+            "stroke": "currentColor",
+            "stroke-width": "2.8",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round"
+          }
+        ],
+        [
+          "ellipse",
+          {
+            "cx": "40",
+            "cy": "46",
+            "rx": "22",
+            "ry": "11",
+            "fill": "currentColor",
+            "opacity": ".42"
+          }
+        ],
+        [
+          "circle",
+          {
+            "cx": "40",
+            "cy": "44",
+            "r": "10.5",
+            "fill": "currentColor"
+          }
+        ]
+      ]
+    ]
+  }
+}
