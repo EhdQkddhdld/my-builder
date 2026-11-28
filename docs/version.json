@@ -1,9 +1,9 @@
 {
-  "web": "3.3.9",
+  "web": "3.3.10",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER: 인물·동작·표정·장면 구성 UI 통합."
+  "note": "ATELIER: 체위·샷 A/B 프롬프트 비교 및 동일 시드 생성."
 }
