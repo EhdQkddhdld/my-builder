@@ -13,8 +13,8 @@ android {
         applicationId "app.mybuilder"
         minSdk 26
         targetSdk 35
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
         // 앱이 여는 주소 (GitHub Pages). HTML만 이 주소에 올리면 앱 재설치 없이 반영됨.
         buildConfigField "String", "APP_URL", '"https://ehdqkddhdld.github.io/my-builder/"'
     }

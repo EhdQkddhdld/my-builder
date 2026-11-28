@@ -16,6 +16,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.HapticFeedbackConstants;
@@ -46,6 +49,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import org.json.JSONObject;
 
 /**
  * My Builder — 얇은 WebView 껍데기.
@@ -65,6 +71,15 @@ public class MainActivity extends Activity {
     private File offlineHtml;
     private long lastHapticAt;
     private String lastHapticKind = "";
+    private static final long EXIT_WINDOW_MS = 2000L;
+    private long lastExitBackAt;
+    private boolean backPending;
+    private boolean resumed;
+    private boolean pageReady;
+    private boolean interacted;
+    private boolean checkingUpdate;
+    private volatile byte[] pendingHtml;
+    private static final Pattern HTML_VERSION = Pattern.compile("<meta\\s+name=\"rd-version\"\\s+content=\"([0-9]+\\.[0-9]+\\.[0-9]+)\"", Pattern.CASE_INSENSITIVE);
 
     @Override
     protected void onCreate(Bundle state) {
@@ -115,15 +130,32 @@ public class MainActivity extends Activity {
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
         }
 
+        root.requestApplyInsets();
         if (state != null) web.restoreState(state);
         if (web.getUrl() == null) web.loadUrl(APP_URL);
     }
 
-    // ---------- 뒤로가기: 웹의 window.rdHandleBack() 이 true면 창 하나만 닫힘, false면 앱 종료 ----------
+    // ---------- 뒤로가기: 웹 → WebView 히스토리 → 2초 이내 두 번 누르면 종료 ----------
     private void handleBack() {
+        if (web == null || isFinishing() || isDestroyed() || backPending) return;
+        interacted = true;
+        backPending = true;
         web.evaluateJavascript(
                 "(function(){try{return !!(window.rdHandleBack&&window.rdHandleBack());}catch(e){return false;}})()",
-                v -> { if (!"true".equals(v)) finish(); });
+                v -> {
+                    backPending = false;
+                    if (!resumed || isFinishing() || isDestroyed()) return;
+                    if ("true".equals(v)) { lastExitBackAt = 0; return; }
+                    if (web.canGoBack()) { lastExitBackAt = 0; web.goBack(); return; }
+                    long now = SystemClock.elapsedRealtime();
+                    if (lastExitBackAt != 0 && now - lastExitBackAt <= EXIT_WINDOW_MS) {
+                        lastExitBackAt = 0;
+                        finish();
+                    } else {
+                        lastExitBackAt = now;
+                        toast("한 번 더 누르면 앱이 종료돼요");
+                    }
+                });
     }
 
     @Override
@@ -133,9 +165,119 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); web.saveState(out); }
-    @Override protected void onPause() { super.onPause(); web.onPause(); CookieManager.getInstance().flush(); }
-    @Override protected void onResume() { super.onResume(); web.onResume(); }
-    @Override protected void onDestroy() { if (web != null) { web.destroy(); } super.onDestroy(); }
+    @Override protected void onPause() {
+        resumed = false;
+        lastExitBackAt = 0;
+        super.onPause();
+        web.onPause();
+        CookieManager.getInstance().flush();
+    }
+    @Override protected void onResume() {
+        super.onResume();
+        resumed = true;
+        web.onResume();
+        checkForWebUpdate();
+    }
+    @Override public void onUserInteraction() {
+        super.onUserInteraction();
+        interacted = true;
+    }
+    @Override public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        // Re-apply insets without reloading or recreating the WebView.
+        getWindow().getDecorView().requestApplyInsets();
+    }
+    @Override protected void onDestroy() {
+        resumed = false;
+        pendingHtml = null;
+        if (web != null) { web.destroy(); }
+        super.onDestroy();
+    }
+
+    // ---------- Foreground web version check; never discard an active draft ----------
+    private static boolean newerVersion(String remote, String current) {
+        if (remote == null || current == null ||
+                !remote.matches("[0-9]+\\.[0-9]+\\.[0-9]+") ||
+                !current.matches("[0-9]+\\.[0-9]+\\.[0-9]+")) return false;
+        String[] a = remote.split("\\."), b = current.split("\\.");
+        try {
+            for (int i = 0; i < 3; i++) {
+                int c = Integer.compare(Integer.parseInt(a[i]), Integer.parseInt(b[i]));
+                if (c != 0) return c > 0;
+            }
+        } catch (NumberFormatException ignored) { }
+        return false;
+    }
+
+    private static String htmlVersion(byte[] body) {
+        if (body == null) return null;
+        Matcher m = HTML_VERSION.matcher(new String(body, 0, Math.min(body.length, 4096), StandardCharsets.UTF_8));
+        return m.find() ? m.group(1) : null;
+    }
+
+    private String fetchWebVersion() {
+        HttpURLConnection c = null;
+        try {
+            c = (HttpURLConnection) new URL(APP_URL + "version.json?t=" + System.currentTimeMillis()).openConnection();
+            c.setConnectTimeout(4000);
+            c.setReadTimeout(4000);
+            c.setUseCaches(false);
+            c.setRequestProperty("Cache-Control", "no-cache");
+            c.setRequestProperty("Pragma", "no-cache");
+            if (c.getResponseCode() != 200) return null;
+            try (InputStream in = c.getInputStream()) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                byte[] buf = new byte[1024];
+                int n;
+                while ((n = in.read(buf)) != -1) {
+                    if (out.size() + n > 16384) return null;
+                    out.write(buf, 0, n);
+                }
+                return new JSONObject(new String(out.toByteArray(), StandardCharsets.UTF_8)).optString("web", null);
+            }
+        } catch (Exception ignored) {
+            return null;
+        } finally {
+            if (c != null) c.disconnect();
+        }
+    }
+
+    private void checkForWebUpdate() {
+        if (!resumed || !pageReady || checkingUpdate || isFinishing() || isDestroyed()
+                || !isAppDoc(Uri.parse(web.getUrl() == null ? "" : web.getUrl()))) return;
+        checkingUpdate = true;
+        // The meta version is the actual rendered HTML, not merely the last remote response.
+        web.evaluateJavascript("(function(){var m=document.querySelector('meta[name=rd-version]');return m?m.content:null;})()", value -> {
+            if (!resumed || isFinishing() || isDestroyed()) { checkingUpdate = false; return; }
+            final String current = value != null && value.matches("\\\"[0-9]+\\.[0-9]+\\.[0-9]+\\\"")
+                    ? value.substring(1, value.length() - 1) : null;
+            if (current == null) { checkingUpdate = false; return; }
+            new Thread(() -> {
+                String remote = fetchWebVersion();
+                byte[] candidate = newerVersion(remote, current) ? fetchFresh() : null;
+                // Pages can briefly serve mismatched version.json and HTML; never apply that pair.
+                final byte[] verified = remote != null && remote.equals(htmlVersion(candidate)) ? candidate : null;
+                runOnUiThread(() -> {
+                    checkingUpdate = false;
+                    if (verified == null || isFinishing() || isDestroyed()) return;
+                    // Keep the latest validated offline HTML even when the active page cannot be reloaded.
+                    saveOffline(verified);
+                    if (!resumed || !pageReady) return;
+                    if (interacted) {
+                        toast("새 웹 버전이 준비됐어요. 작업을 마치고 앱을 다시 열면 적용돼요");
+                        return;
+                    }
+                    web.evaluateJavascript("(function(){try{return !!(window.rdNai?.isBusy?.()||window.rd210PoseBusy?.()||window.rdV30Current?.()!=='home');}catch(e){return true;}})()", busy -> {
+                        if (!resumed || !pageReady || interacted || isFinishing() || isDestroyed()
+                                || !"false".equals(busy)) return;
+                        pendingHtml = verified;
+                        web.clearCache(true);
+                        web.reload();
+                    });
+                });
+            }, "mybuilder-version-check").start();
+        });
+    }
 
     // ---------- 페이지 로딩 ----------
     private boolean isAppDoc(Uri u) {
@@ -153,10 +295,23 @@ public class MainActivity extends Activity {
     }
 
     private class Client extends WebViewClient {
+        @Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            pageReady = false;
+            super.onPageStarted(view, url, favicon);
+        }
+
+        @Override public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            pageReady = isAppDoc(Uri.parse(url));
+            checkForWebUpdate();
+        }
+
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
             if (!req.isForMainFrame() || !"GET".equals(req.getMethod()) || !isAppDoc(req.getUrl())) return null;
-            byte[] body = fetchFresh();
+            byte[] body = pendingHtml;
+            pendingHtml = null;
+            if (body == null) body = fetchFresh();
             if (body != null) saveOffline(body);
             else body = readOffline();
             if (body == null) body = offlinePage().getBytes(StandardCharsets.UTF_8);
@@ -203,19 +358,22 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void saveOffline(byte[] b) {
+    private synchronized void saveOffline(byte[] b) {
+        android.util.AtomicFile file = new android.util.AtomicFile(offlineHtml);
+        FileOutputStream out = null;
         try {
             File dir = offlineHtml.getParentFile();
             if (dir != null && !dir.exists()) dir.mkdirs();
-            File tmp = new File(dir, "index.html.tmp");
-            try (FileOutputStream o = new FileOutputStream(tmp)) { o.write(b); }
-            if (!tmp.renameTo(offlineHtml)) { offlineHtml.delete(); tmp.renameTo(offlineHtml); }
-        } catch (Exception ignored) { }
+            out = file.startWrite();
+            out.write(b);
+            file.finishWrite(out);
+        } catch (Exception ignored) {
+            if (out != null) file.failWrite(out);
+        }
     }
 
-    private byte[] readOffline() {
-        if (!offlineHtml.exists()) return null;
-        try (InputStream in = new java.io.FileInputStream(offlineHtml)) {
+    private synchronized byte[] readOffline() {
+        try (InputStream in = new android.util.AtomicFile(offlineHtml).openRead()) {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
             byte[] buf = new byte[65536];
             int n;
