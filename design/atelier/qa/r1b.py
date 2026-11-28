@@ -12,7 +12,7 @@ OUT.mkdir(exist_ok=True)
 server=ThreadingHTTPServer(('127.0.0.1',0),partial(SimpleHTTPRequestHandler,directory=str(ROOT/'docs')))
 Thread(target=server.serve_forever,daemon=True).start()
 origin=f'http://127.0.0.1:{server.server_port}'
-categories={'style':['style'],'person':['count','char','appearance','body','react'],'clothes':['cloth'],'composition':['pose','cam'],'direction':['light','intensity','advanced'],'background':['env']}
+categories={'style':['style'],'person':['count','char','cloth','appearance','body','react'],'composition':['pose','cam'],'direction':['env','light','intensity','advanced']}
 results=[]
 try:
     with sync_playwright() as p:
@@ -27,7 +27,7 @@ try:
             try:
                 response=page.goto(origin+'/index.html',wait_until='load')
                 assert response and response.ok
-                page.wait_for_function("typeof window.rdV30Route==='function' && document.querySelectorAll('.atelier-category').length===6")
+                page.wait_for_function("typeof window.rdV30Route==='function' && document.querySelectorAll('.atelier-category').length===5")
                 page.evaluate("window.rdV30Route('builder')")
                 state=page.evaluate('JSON.stringify(captureState())')
                 undo=page.locator('#btn-undo').is_disabled()
@@ -67,6 +67,17 @@ try:
                 page.wait_for_function("(s)=>JSON.stringify(captureState())===s",arg=before)
                 page.wait_for_function("(n)=>Number(document.querySelector('[data-atelier-category=direction] .atelier-count').textContent)===n",arg=n)
                 page.locator('[data-atelier-category="composition"]').click()
+                assert page.locator('[data-atelier-category="clothes"],[data-atelier-category="background"]').count()==0
+                assert page.locator('[data-atelier-category="studio"] .atelier-count').is_hidden()
+                page.locator('[data-atelier-category="studio"]').click()
+                page.wait_for_function("window.rdV30Current()==='studio'")
+                assert not page.evaluate('window.rdNai.isBusy()'), 'studio navigation unexpectedly started generation'
+                assert page.evaluate('JSON.stringify(captureState())')==before
+                assert page.evaluate('window.rdHandleBack()') is True
+                page.wait_for_function("window.rdV30Current()==='builder'")
+                assert panel.is_visible()
+                assert page.locator('[data-atelier-category="composition"]').get_attribute('aria-pressed')=='true'
+                assert page.evaluate('JSON.stringify(captureState())')==before
                 page.screenshot(path=str(OUT/f'category-{width}x{height}.png'))
                 page.locator('#rd-v30-step4').click()
                 assert not panel.is_visible()
