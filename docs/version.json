@@ -1,9 +1,9 @@
 {
-  "web": "3.3.8",
+  "web": "3.3.9",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER: 승인 장면 R3 SVG 픽토그램 14종 적용, 기존 38종 유지."
+  "note": "ATELIER: 인물·동작·표정·장면 구성 UI 통합."
 }
