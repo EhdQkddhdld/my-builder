@@ -1,9 +1,9 @@
 {
-  "web": "3.3.17",
+  "web": "3.4.0",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "A/B 비교: 서로 다른 랜덤 시드, 결과별 시드 기록 유지."
+  "note": "ATELIER: 촉수 장면 5종, 삽입 상태 전환, 남성 바리에이션."
 }
