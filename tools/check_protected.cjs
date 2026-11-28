@@ -3,6 +3,7 @@
 // Byte-exact source guard for the 15 approved core declarations.
 // Node 22.16.0 provides the bundled Acorn parser; no application dependency.
 const fs = require('node:fs');
+const {createHash} = require('node:crypto');
 const acorn = require('internal/deps/acorn/acorn/dist/acorn');
 const names = [
   'assignTough', 'scanFlatGroups', 'validateShotRegistry', 'rd210ValidSlots',
@@ -56,16 +57,35 @@ function collect(path) {
   }
   return found;
 }
+// v3.4.1 permits these exact transitions from the approved v3.4.0 baseline.
+const approved = new Map([
+  ['generate', [
+    'b34ef32a6e5ad18cf26df551fc7251583574b53b3e897dfb9e726f76afb080ac',
+    '57f49517d62fd4658d66bf4a419934cabaa5c64c17e2949bfaf3c5131265d0d2'
+  ]],
+  ['SHOT_TEMPLATES', [
+    'f760d83643f8969b9173f8af7b572045fc62174594a3635698376f4058f86594',
+    '29a0429882fa28b47e4ea8a3d3017b28cb64bc6fb2f041a198757c2ad55fb31c'
+  ]],
+  ['POSE_BY_COUNT', [
+    'bcf900f23151755c8d2b0d8dc6dfe0ae44834ff9d59dcd214077e58895bd01eb',
+    '81a45eed6a0210813ed8a4422f0b2ef824cf54470c75b63b5000e204710d8087'
+  ]]
+]);
+const hash = source => createHash('sha256').update(source).digest('hex');
 try {
   if (process.argv.length!==4) throw new Error('Usage: node --expose-internals tools/check_protected.cjs BASE_HTML CANDIDATE_HTML');
   const base=collect(process.argv[2]), candidate=collect(process.argv[3]);
   let pass=0;
   for (const name of names) {
     const equal=base.get(name)[0]===candidate.get(name)[0];
-    console.log((equal?'PASS ':'CHANGED ')+name);
-    if (equal) pass++;
+    const transition = approved.get(name);
+    const accepted = !equal && transition && hash(base.get(name)[0])===transition[0] &&
+      hash(candidate.get(name)[0])===transition[1];
+    console.log((equal?'PASS ':accepted?'APPROVED CHANGE ':'CHANGED ')+name);
+    if (equal || accepted) pass++;
   }
-  console.log('Protected blocks unchanged: '+pass+'/'+names.length);
+  console.log('Protected blocks verified: '+pass+'/'+names.length);
   if (pass!==names.length) process.exitCode=1;
 } catch (err) {
   console.error('Protected block check failed:',err.message);

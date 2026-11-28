@@ -1,9 +1,9 @@
 {
-  "web": "3.4.0",
+  "web": "3.4.1",
   "web_file": "docs/index.html",
-  "web_updated": "2026-11-28",
+  "web_updated": "2026-11-29",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER: 촉수 장면 5종, 삽입 상태 전환, 남성 바리에이션."
+  "note": "초근접 샷 보강, 시네마틱 조합 제한, 적용 구도 및 해제 안내."
 }
