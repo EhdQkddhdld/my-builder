@@ -79,7 +79,10 @@ try:
                 assert page.locator('[data-atelier-category="composition"]').get_attribute('aria-pressed')=='true'
                 assert page.evaluate('JSON.stringify(captureState())')==before
                 page.screenshot(path=str(OUT/f'category-{width}x{height}.png'))
-                page.locator('#rd-v30-step4').click()
+                assert page.locator('#rd-v30-step4').is_hidden(), 'legacy final review rail exposed'
+                assert page.locator('#step-nav > button:visible').count()==5, 'unexpected rail entry'
+                page.locator('#rd-v27-menu').click()
+                page.locator('#rd-v27-menu-extra').get_by_role('button',name='완성 프롬프트 보기').click()
                 assert not panel.is_visible()
                 assert page.evaluate("document.body.dataset.rdStep==='step-4'")
                 assert page.evaluate('JSON.stringify(captureState())')==before
