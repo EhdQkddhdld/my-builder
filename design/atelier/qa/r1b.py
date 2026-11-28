@@ -32,6 +32,42 @@ try:
                 state=page.evaluate('JSON.stringify(captureState())')
                 undo=page.locator('#btn-undo').is_disabled()
                 panel=page.locator('#rd-atelier-category-panel')
+                summary=page.locator('#rd-atelier-summary')
+                dock=page.locator('#rd-atelier-dock')
+                full=summary.locator('.atelier-full')
+                toggle=summary.locator('.atelier-summary-toggle')
+                def assert_summary():
+                    rail_total=sum(int(x.text_content()) for x in page.locator('#step-nav .atelier-category:not([data-atelier-category="studio"]) .atelier-count').all())
+                    assert summary.locator('.atelier-summary-total').first.text_content()==str(rail_total)+'개'
+                    assert full.locator('.atelier-tag').count()==rail_total,'summary list and rail count differ'
+                    assert summary.is_visible() and dock.is_visible()
+                    a=summary.bounding_box()
+                    d=dock.bounding_box()
+                    m=page.locator('#rd-main').bounding_box()
+                    assert a and d and m,(a,d,m)
+                    assert min(a['width'],d['width'],m['width'])>0
+                    assert d['y']+d['height']<=height+1,(d,height)
+                    if width>=840:
+                        assert a['x']>=m['x']+m['width']-1,(a,m)
+                    else:
+                        assert a['y']>=m['y']+m['height']-1,(a,m)
+                    assert d['y']>=a['y']+a['height']-1,(d,a)
+                    for control in dock.locator('button').all():
+                        size=control.bounding_box()
+                        assert size and size['height']>=44 and size['width']>=44,size
+                    return rail_total
+                initial_total=assert_summary()
+                if width<840:
+                    assert not full.is_visible()
+                    toggle.click()
+                    assert full.is_visible()
+                    assert page.evaluate('JSON.stringify(captureState())')==state
+                    assert page.locator('#btn-undo').is_disabled()==undo
+                    assert page.evaluate('window.rdHandleBack()') is True
+                    assert not full.is_visible()
+                else:
+                    assert full.is_visible()
+                assert_summary()
                 for key,expected in categories.items():
                     button=page.locator('[data-atelier-category="'+key+'"]')
                     button.click()
@@ -57,20 +93,31 @@ try:
                 chip=page.locator('#group-light .chip[data-val]:not(.active):not(.locked):not(.dimmed):visible').first
                 assert chip.count()==1,'no selectable light'
                 chip.click()
+                chosen=chip.evaluate("(c)=>(c.querySelector('.ko')?.textContent||c.textContent||c.dataset.val||'').replace(/\\s+/g,' ').trim()")
                 new_light=page.evaluate("getActiveValues('group-light').length")
                 page.wait_for_function("(n)=>Number(document.querySelector('[data-atelier-category=direction] .atelier-count').textContent)===n",arg=n+new_light-old_light)
                 assert page.evaluate('JSON.stringify(captureState())')!=before
                 assert page.evaluate('window.rdHandleBack()') is True
                 page.locator('body:not(.rd302-detail-open)').wait_for()
                 assert panel.is_visible()
+                assert_summary()
+                assert chosen in full.locator('.atelier-tag').all_text_contents(), 'selected name missing from summary'
+                assert chosen in panel.locator('[data-detail="light"] .rd302-index-text small').text_content()
                 page.locator('#rd-v27-undo').click()
                 page.wait_for_function("(s)=>JSON.stringify(captureState())===s",arg=before)
                 page.wait_for_function("(n)=>Number(document.querySelector('[data-atelier-category=direction] .atelier-count').textContent)===n",arg=n)
+                assert assert_summary()==initial_total
+                page.locator('[data-atelier-category="composition"]').click()
+                if width<840: toggle.click()
+                full.locator('.atelier-group-button').first.click()
+                assert page.locator('[data-atelier-category="style"]').get_attribute('aria-pressed')=='true'
+                assert page.evaluate('JSON.stringify(captureState())')==before
                 page.locator('[data-atelier-category="composition"]').click()
                 assert page.locator('[data-atelier-category="clothes"],[data-atelier-category="background"]').count()==0
                 assert page.locator('[data-atelier-category="studio"] .atelier-count').is_hidden()
-                page.locator('[data-atelier-category="studio"]').click()
+                dock.get_by_role('button',name='스튜디오 열기').click()
                 page.wait_for_function("window.rdV30Current()==='studio'")
+                assert not summary.is_visible() and not dock.is_visible()
                 assert not page.evaluate('window.rdNai.isBusy()'), 'studio navigation unexpectedly started generation'
                 assert page.evaluate('JSON.stringify(captureState())')==before
                 assert page.evaluate('window.rdHandleBack()') is True
@@ -78,7 +125,14 @@ try:
                 assert panel.is_visible()
                 assert page.locator('[data-atelier-category="composition"]').get_attribute('aria-pressed')=='true'
                 assert page.evaluate('JSON.stringify(captureState())')==before
+                assert_summary()
                 page.screenshot(path=str(OUT/f'category-{width}x{height}.png'))
+                if width<840:
+                    toggle.click()
+                    assert full.is_visible()
+                    assert_summary()
+                    page.screenshot(path=str(OUT/f'summary-expanded-{width}x{height}.png'))
+                    toggle.click()
                 assert page.locator('#rd-v30-step4').is_hidden(), 'legacy final review rail exposed'
                 assert page.locator('#step-nav > button:visible').count()==5, 'unexpected rail entry'
                 page.locator('#rd-v27-menu').click()
@@ -91,7 +145,9 @@ try:
                 assert not errors,errors
                 result['status']='PASS'
             except Exception as e:
+                import traceback
                 result['error']=repr(e)
+                result['traceback']=traceback.format_exc()
                 result['page_errors']=errors
             finally:
                 context.close()
