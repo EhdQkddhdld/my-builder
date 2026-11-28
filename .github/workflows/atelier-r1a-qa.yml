@@ -1,8 +1,11 @@
-name: ATELIER R1a/R1b navigation QA
+name: ATELIER isolated verification
 on:
   push:
     branches: ['qa/v3.3.0-atelier']
     paths: ['docs/index.html','.github/workflows/atelier-r1a-qa.yml','design/atelier/qa/r1a.py','design/atelier/qa/r1b.py']
+  pull_request:
+    branches: ['qa/v3.3.0-atelier']
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@v4
@@ -27,6 +31,7 @@ jobs:
           mkdir -p qa-evidence
           git rev-parse HEAD > qa-evidence/commit.txt
           sha256sum docs/index.html docs/version.json > qa-evidence/SHA256.txt
+          echo 'dc43e47daa950f5f8a2f721140017045553b6173ccd7b41ac59998001fbeeadb  docs/index.html' | sha256sum -c -
           git diff --check "$(git merge-base HEAD origin/main)" HEAD
           python3 tools/scan_secrets.py | tee qa-evidence/security.txt
           python3 tools/check_index.py docs/index.html | tee qa-evidence/html.txt
@@ -37,6 +42,7 @@ jobs:
       - name: Navigation browser tests
         run: python3 design/atelier/qa/r1a.py
       - name: Category and selected-count browser tests
+        if: ${{ !cancelled() }}
         run: python3 design/atelier/qa/r1b.py
       - name: Evidence
         if: always()
