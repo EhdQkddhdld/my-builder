@@ -60,3 +60,8 @@ Neon 별도 연구 명세는 이 디자인 보관 범위에 포함하지 않았�
 - 기존 생성 폼에서 이미지 크기/Steps/CFG 읽기, 기존 메인 복사 버튼 호출, 선택 카드 강조와 키보드 포커스, 도트/배경 보강/가중치 안정화 및 사용자 입력 슬롯 개수 표시 보완. 생성 요청 경로와 원래 설정 화면 그대로 유지.
 - 사용자 입력값은 슬롯 수만 표시. 입력 원문 및 모든 비칩 필드의 완전한 표시 여부는 별도 확인 필요.
 - 이전/현재 원격 blob 및 SHA-256 확인, version.json 유지 (3cc74b2226730009d09703c6de9c7830ac6da30f), 신규 innerHTML/Math.random 문자열 증가 없음. 로컬 git ls-remote 실패: Could not resolve host: github.com. 공식 검사/Chromium/Actions 결과 미확인. 배포 금지. 다음: 실제 실행 환경에서 기존 검사 및 전체 회귀, 필요한 보완, 독립 검수, 버전 확정 및 배포 승인.
+
+## 종합 QA 재개 지점
+- 최신 제품 후보는 변경하지 않았다. 공식 검사 PASS: [run 46109691764](https://github.com/EhdQkddhdld/my-builder/actions/runs/46109691764), navigation job 140870234650. 브라우저/저장 결과는 아직 미확인.
+- [검수 전용 Draft PR #4](https://github.com/EhdQkddhdld/my-builder/pull/4) (qa/v3.3.0-atelier-verify → qa/v3.3.0-atelier, main 아님, 병합 금지). 검수 커밋 e8bcf80e52755bca0e57b8151f5c85284da019d2. 제품 blob 동일.
+- 상세 증거와 남은 필수 항목: REVIEW.md의 2026-11-28 R2/R3 중간 기록. 정적 12/12 구문 컴파일 통과, 실제 런타임과 별개. 새 후보 버전 문자열 확정 및 22개 출력 비교/모의 API 등 미완료.
