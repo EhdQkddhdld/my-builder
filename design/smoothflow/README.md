@@ -1,0 +1,3 @@
+# Smoothflow v3.3.12
+
+Rebased onto main 4b1867aaa9a4914fcfe43e634f06008abede53c1 (v3.3.11 unified single-select). Approved Smoothflow candidate cdd62c1cf76885f4b02daeea920699117bbc18a9 and original [scope](https://github.com/EhdQkddhdld/my-builder/blob/cdd62c1cf76885f4b02daeea920699117bbc18a9/design/smoothflow/README.md). Exact original patch reconstructed before applying all 14 non-version hunks to new main; version and changelog updated to preserve both releases. User reports review complete and requests deployment. Integrated candidate requires its own fixed QA and independent review of impact, since main changed. No actual NAI calls in QA.
