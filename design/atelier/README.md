@@ -1,6 +1,6 @@
 # Project ATELIER · v3.3.0 작업실
 
-상태: R1a 단계 레일 제품 체크포인트 및 한정 실행 검사 통과. 최종 구현·전체 QA·독립 검수 미완료. main/Pages/APK 변경 금지.
+상태: R1b 통합 레일 제품 후보 및 QA 코드 보관. R1a 기존 후보의 한정 실행 검사 통과. R1b 실행 결과 미확인. 최종 구현·전체 QA·독립 검수 미완료. main/Pages/APK 변경 금지.
 
 - 기준 main: 205ba64810be7fc6e1bdeb0290f69317b925283e
 - 웹 기준: v3.2.1, APK 1.1 (versionCode 2)
@@ -29,3 +29,14 @@ Neon 별도 연구 명세는 이 디자인 보관 범위에 포함하지 않았�
 - [체크포인트](CHECKPOINT_R1a.md), [검사 코드](qa/r1a.py).
 - [Actions 실행 기록](https://github.com/EhdQkddhdld/my-builder/actions?query=branch%3Aqa%2Fv3.3.0-atelier). R1a 한정 검사 완료. [검사 결과](QA_R1a_RESULT.md) 참고.
 - 다음 단계: 승인 시안과 나머지 일반 UI 연결 및 영향 경로 검수. 승인 시안 전체와 R1a 검사 범위를 구분한다. 제품 후보와 QA 기록을 구분하고 배포 승인 전 main을 변경하지 않는다.
+
+## R1b 최신 체크포인트
+- 제품 커밋: 64bab79980652633bd4ffa44e4cca9d11d7dcaa4
+- 제품 blob: 05af3b7a7a7a9dc1cdfd6b275392835317029fcc
+- 제품 SHA-256: 2e2856d473d257bdf9ff747416ccfcb658a62ca7f40595bc13680bad178d4c28
+- 제품 UTF-8 bytes: 1431575
+- QA 코드 커밋: 92fd66879388517f67488af32d8cab01e7b84295
+- 최신 디자인 결정: 310b5bef5cb4e8feb59bb099a10fa6e7cf2f2381 (DESIGN.md)
+- 레일: 화풍·인물(의상 통합)·구도·연출(배경 통합)·스튜디오. 최종 확인 유지. 스튜디오 이동은 API 생성 실행이 아님.
+- QA: 기존 R1a 및 갱신된 qa/r1b.py. 해당 후보의 새 Actions 실행 결과 미확인; 이전 R1a PASS는 이전 blob에만 해당. 새 제품의 공식 검사 및 브라우저 회귀 확인 필요.
+- 미완료: R2/R3, 전체 상태·출력·저장·폴더블 회귀, Neon 독립 검수, 배포 승인. main/Pages/APK 변경 없음.
