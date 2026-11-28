@@ -1,9 +1,9 @@
 {
-  "web": "3.3.14",
+  "web": "3.3.15",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER: 상단 순차 시작, 컴팩트 허브 상태판, 캐릭터 공식 코스튬 인라인."
+  "note": "ATELIER: 캐릭터 상단 코스튬, 외형·행동 통합, 장면·카메라 정리."
 }
