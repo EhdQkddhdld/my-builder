@@ -16462,7 +16462,7 @@ function installAtelierCategories(){
  const heading=node('header',null,'d3-index-heading'),eyebrow=node('small'),title=node('h2'),grid=node('div',null,'rd302-index');
  heading.append(eyebrow,title);panel.append(heading,grid);panel.hidden=true;main.append(panel);
  const controls=new Map(),scrolls=new Map();let active=null,navigating=false,legacyTop=0,legacyStep='';
- const step=id=>{navigating=true;try{return window.jumpToStep(id)}finally{navigating=false}};
+ const step=id=>{const top=main.scrollTop;navigating=true;try{return window.jumpToStep(id)}finally{navigating=false;if(active)main.scrollTop=top}};
  function restoreCards(){
   for(const a of [...anchors].reverse())if(a.n.parentNode===grid)a.p.insertBefore(a.n,a.next?.parentNode===a.p?a.next:null);
  }
