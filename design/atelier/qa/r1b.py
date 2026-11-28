@@ -92,17 +92,19 @@ try:
                 n=int(badge.text_content())
                 old_light=page.evaluate("getActiveValues('group-light').length")
                 panel.locator('[data-detail="light"]').click()
-                page.locator('body.rd302-detail-open').wait_for()
+                page.locator('body.rd302-detail-open').wait_for(state='attached')
+                page.locator('#rd-v30-detail').wait_for(state='visible')
                 assert not panel.is_visible()
                 chip=page.locator('#group-light .chip[data-val]:not(.active):not(.locked):not(.dimmed):visible').first
                 assert chip.count()==1,'no selectable light'
-                chip.click()
                 chosen=chip.evaluate("(c)=>(c.querySelector('.ko')?.textContent||c.textContent||c.dataset.val||'').replace(/\\s+/g,' ').trim()")
+                chip.click()
                 new_light=page.evaluate("getActiveValues('group-light').length")
                 page.wait_for_function("(n)=>Number(document.querySelector('[data-atelier-category=direction] .atelier-count').textContent)===n",arg=n+new_light-old_light)
                 assert page.evaluate('JSON.stringify(captureState())')!=before
                 assert page.evaluate('window.rdHandleBack()') is True
-                page.locator('body:not(.rd302-detail-open)').wait_for()
+                page.locator('body.rd302-detail-open').wait_for(state='detached')
+                page.locator('#rd-v30-detail').wait_for(state='detached')
                 assert panel.is_visible()
                 assert_summary()
                 assert chosen in full.locator('.atelier-tag').all_text_contents(), 'selected name missing from summary'
