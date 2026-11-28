@@ -1067,11 +1067,19 @@ body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open) #rd-ateli
 body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open) #rd-atelier-dock{
  display:flex;grid-area:3/1;align-items:center;gap:8px;padding:6px 10px 8px;border-top:1px solid #34343f;background:#191920;min-width:0
 }
+#rd-atelier-dock{flex-direction:column;align-items:stretch!important;gap:4px!important}
+#rd-atelier-dock .atelier-gen-info{display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0;font-size:13px;color:#9693a3;padding:0 2px;line-height:1.4}
+#rd-atelier-dock .atelier-gen-size{color:#e0dfe8;font-weight:600;white-space:nowrap}
+#rd-atelier-dock .atelier-gen-params{text-align:right;overflow-wrap:anywhere}
+#rd-atelier-dock .atelier-dock-actions{display:flex;gap:6px;min-width:0}
+#rd-atelier-dock .atelier-dock-actions .atelier-studio{min-width:0;white-space:normal;overflow-wrap:anywhere}
 #rd-atelier-dock button{min-height:44px;min-width:44px;border-radius:10px;border:1px solid #454550;background:#20202b;color:#e0dfe8;font:inherit;font-size:13px;padding:6px 10px}
 #rd-atelier-dock .atelier-studio{flex:1;background:#c4baff;color:#171126;font-weight:700;border-color:#c4baff}
 #rd-atelier-dock button:disabled{opacity:.55}
-body.rd302 #rd-atelier-category-panel .rd302-index-card[data-atelier-selected="true"]{border-color:#69617f}
+body.rd302 #rd-atelier-category-panel .rd302-index-card[data-atelier-selected="true"]{border-color:#69617f;background:#29263a}
 body.rd302 #rd-atelier-category-panel .rd302-index-card[data-atelier-selected="true"] .rd302-index-text small{color:#c4baff}
+body.rd302 #rd-atelier-category-panel .rd302-index-card .rd302-index-text small{display:block;overflow-wrap:anywhere;line-height:1.45}
+body.rd302 #rd-atelier-category-panel .rd302-index-card:focus-visible,#rd-atelier-dock button:focus-visible,#rd-atelier-summary button:focus-visible{outline:2px solid #a89bff;outline-offset:2px}
 @media(min-width:840px){
  body.rd-v30.rd302[data-rd-workspace="builder"]:not(.rd302-detail-open):has(#rd-atelier-summary) #rd-shell{
   grid-template-columns:minmax(0,1fr) minmax(250px,35%)!important;
@@ -16568,6 +16576,13 @@ function installAtelierCategories(){
    const value=row.buttons.find(b=>b.dataset.val===row.input.value)?.textContent?.trim()||row.input.value;
    settings.push({key:owner.key,detailKey:owner.detailKey,label:title+': '+value});
   }
+  const addSetting=(key,detailKey,label)=>settings.push({key,detailKey,label});
+  const state=captureState();
+  addSetting('style','style','도트 모드: '+(effectiveIsDot()?'켜짐':'꺼짐'));
+  addSetting('direction','advanced','배경 보강: '+(state.bgEnrich?'켜짐':'꺼짐'));
+  addSetting('style','style','가중치 안정화: '+(state.stabilizeWeights?'켜짐':'꺼짐'));
+  const customCount=Object.values(state.customTags||{}).filter(v=>typeof v==='string'&&v.trim()).length;
+  if(customCount)addSetting('direction','intensity','직접 입력: '+customCount+'개 슬롯');
   return {items,settings};
  }
  const summary=ep(node('aside','rd-atelier-summary')),toggle=button('',()=>{if(!wide.matches)setExpanded(!expanded)});
@@ -16580,7 +16595,25 @@ function installAtelierCategories(){
  const dock=ep(node('footer','rd-atelier-dock'));
  const prompts=button('프롬프트',()=>{if(batch())return;setExpanded(false);window.jumpToStep('step-4')});
  const studio=button('스튜디오 열기',()=>{if(!batch())go('studio')});studio.className='atelier-studio';
- dock.append(prompts,studio);$('rd-shell').append(summary,dock);
+ const copy=button('복사',()=>{if(!batch())$('rd-v27-copy')?.click()});
+ copy.className='atelier-copy';copy.setAttribute('aria-label','메인 프롬프트 복사');
+ const genInfo=node('div',null,'atelier-gen-info');
+ const genSize=node('span',null,'atelier-gen-size'),genParams=node('span',null,'atelier-gen-params');
+ genInfo.append(genSize,genParams);
+ const actions=node('div',null,'atelier-dock-actions');actions.append(prompts,copy,studio);
+ dock.append(genInfo,actions);$('rd-shell').append(summary,dock);
+ function paintGenerationInfo(){
+  const size=$('rd-nai-size')?.value||'';
+  const steps=$('rd-nai-steps')?.value||'';
+  const scale=$('rd-nai-scale')?.value||'';
+  const sizeLabel=/^\d+x\d+$/.test(size)?size.replace('x',' × '):'크기 설정';
+  const params=[steps&&'Steps '+steps,scale&&'CFG '+scale].filter(Boolean).join(' · ');
+  if(genSize.textContent!==sizeLabel)genSize.textContent=sizeLabel;
+  if(genParams.textContent!==params)genParams.textContent=params;
+  const disabled=batch()||!copySlots.some(slot=>slot.name==='메인'&&slot.text);
+  if(copy.disabled!==disabled)copy.disabled=disabled;
+  const locked=batch();if(studio.disabled!==locked)studio.disabled=locked;
+ }
  function setExpanded(on){expanded=!!on;summary.dataset.expanded=String(expanded);toggle.setAttribute('aria-expanded',String(wide.matches||expanded));toggleLabel.textContent=expanded?'접기':'전체 보기'}
  function layout(){toggle.disabled=wide.matches;setExpanded(expanded)}
  wide.addEventListener('change',layout);layout();
@@ -16590,6 +16623,7 @@ function installAtelierCategories(){
   if(detailKey)openDetail(detailKey);
  }
  function paint(){
+  paintGenerationInfo();
   const {items,settings}=readSelection(),counts=new Map();
   for(const item of items)counts.set(item.key,(counts.get(item.key)||0)+1);
   const view=JSON.stringify({items,settings});
@@ -16669,7 +16703,7 @@ function setSpace(next){
  if(next==='lab'&&!labVisited){labVisited=true;$('artist-vault-fold').open=true;$('artist-mixer-fold').open=true}
  hide($('rd-v30-nav'),next==='home');hide($('rd-v30-back'),next==='home');hide($('rd-v27-undo'),!builder);syncPreviewPanel();
  if(next==='home')refreshHome();
- if(next==='builder'){window.rdV27SyncNav?.();window.rdV30BuilderSummary?.();}
+ if(next==='builder'){window.rdV27SyncNav?.();window.rdV30BuilderSummary?.();atelier?.paint();}
  const p=pos();if(p)p.scrollTop=positions.get(posKey())??(next==='builder'?window.rdV28StepPosition?.(B.dataset.rdStep)||0:0);if(next==='studio'){const f=document.querySelector('.rd-st-form');if(f)f.scrollTop=positions.get('studio-form')||0}
  if(ready){prefs.last=next;write(PREF,prefs);motionSpace(next)}
 }
