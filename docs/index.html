@@ -17128,9 +17128,9 @@ function openDetail(key,focus=true){
  const moved=ns.filter(n=>n?.isConnected).map(n=>({n,p:n.parentNode,next:n.nextSibling}));
  detail={key,top,trigger,host,bar,jump,done,moved,step};
  for(const a of moved)host.append(a.n);
- if(key==='char')mountCharacterInline(detail);
  // The advanced controls are inside the intensity wrapper. Keep their own index visibility independent.
  main.append(host);B.append(bar,jump);
+ if(key==='char')mountCharacterInline(detail);
  B.append(done);
  if(key==="pose")detail.cleanup=buildSceneSearch(host);
  if(key==="style"||key==="char"){cardThumbs.paint(host).catch(e=>window.rdToast?.(e.message,"warn"));detail.cleanup=cardThumbs.release;}
