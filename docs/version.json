@@ -1,9 +1,9 @@
 {
-  "web": "3.2.1",
+  "web": "3.3.0",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "선택 카드 정렬 및 장면 편집 화면 정리."
+  "note": "ATELIER 퀵레일, 현재 선택 요약, 생성 설정 및 복사 Dock."
 }
