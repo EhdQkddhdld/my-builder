@@ -1,9 +1,9 @@
 {
-  "web": "3.3.13",
+  "web": "3.3.14",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER: Seamless Flow, 4대분류 연속 이동과 선택·스크롤 유지, 컴팩트 화풍 카드."
+  "note": "ATELIER: 상단 순차 시작, 컴팩트 허브 상태판, 캐릭터 공식 코스튬 인라인."
 }
