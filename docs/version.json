@@ -1,9 +1,9 @@
 {
-  "web": "3.3.16",
+  "web": "3.4.0",
   "web_file": "docs/index.html",
   "web_updated": "2026-11-28",
   "apk": "1.1",
   "apk_version_code": 2,
   "app_url": "https://ehdqkddhdld.github.io/my-builder/",
-  "note": "ATELIER: 공식 코스튬 상단 배치, A/B 비교 단일 토글."
+  "note": "ATELIER: 촉수 장면 5종, 삽입 상태 전환, 남성 바리에이션."
 }
